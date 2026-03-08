@@ -11,21 +11,26 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env from project root
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--f388k!-+&4lsq=lk8db=1+fz4n9f+%bu%%c!-qxz22vl4hvld'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-insecure-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h] or []
 
 
 # Application definition
@@ -68,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'CAMPOVERDE.context.app_context',
             ],
         },
     },
@@ -81,8 +87,12 @@ WSGI_APPLICATION = 'CAMPOVERDE.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.environ.get('DB_USER', ''),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', ''),
+        'PORT': os.environ.get('DB_PORT', ''),
     }
 }
 
@@ -127,7 +137,10 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-WHATSAPP_NUMBER = '573001234567'
-DEFAULT_SHIPPING_COST = 10000
-FREE_SHIPPING_OVER = 100000
-DISCOUNT_PERCENT = 0
+WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '573001234567')
+DEFAULT_SHIPPING_COST = int(os.environ.get('DEFAULT_SHIPPING_COST', '10000'))
+FREE_SHIPPING_OVER = int(os.environ.get('FREE_SHIPPING_OVER', '100000'))
+DISCOUNT_PERCENT = int(os.environ.get('DISCOUNT_PERCENT', '0'))
+BUSINESS_HOURS = os.environ.get('BUSINESS_HOURS', 'Lun-Sáb 8:00-18:00 · Dom 8:00-13:00')
+SOCIAL_FACEBOOK_URL = os.environ.get('SOCIAL_FACEBOOK_URL', 'https://facebook.com/tu_pagina')
+SOCIAL_INSTAGRAM_URL = os.environ.get('SOCIAL_INSTAGRAM_URL', 'https://instagram.com/tu_perfil')

@@ -21,9 +21,14 @@
     <div class="top-bar">
         <div class="container d-flex justify-content-between align-items-center">
             <div><i class="bi bi-geo-alt-fill me-2"></i>Envío rápido a toda la ciudad</div>
-            <div class="d-none d-sm-block">
-                <span class="me-3"><i class="bi bi-clock-fill me-2"></i>Abiertos: 8:00 AM - 6:00 PM</span>
-                <span><i class="bi bi-whatsapp me-2"></i>Dudas: 800-CAMPO</span>
+            <div class="d-none d-sm-flex align-items-center gap-3">
+                <span class="me-2"><i class="bi bi-clock-fill me-2"></i>{{ BUSINESS_HOURS }}</span>
+                <a href="{{ SOCIAL_FACEBOOK_URL }}" target="_blank" class="text-decoration-none text-white-50 hover text-white">
+                    <i class="bi bi-facebook fs-5"></i>
+                </a>
+                <a href="{{ SOCIAL_INSTAGRAM_URL }}" target="_blank" class="text-decoration-none text-white-50 hover text-white">
+                    <i class="bi bi-instagram fs-5"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -107,14 +112,96 @@
             <p class="mb-2 fs-5 fw-bold">CAMPOVERDE</p>
             <p class="text-secondary small">© 2024 Vivero Campoverde - Todos los derechos reservados.</p>
             <div class="d-flex justify-content-center gap-3 mt-3">
-                <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
+                <a href="{{ SOCIAL_INSTAGRAM_URL }}" target="_blank" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
+                <a href="{{ SOCIAL_FACEBOOK_URL }}" target="_blank" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
                 <a href="#" class="text-white fs-4"><i class="bi bi-whatsapp"></i></a>
             </div>
         </div>
     </footer>
 
+    <a href="https://wa.me/{{ WHATSAPP_NUMBER }}?text={{ 'Hola, quiero hacer un pedido'|urlencode }}" target="_blank"
+       class="position-fixed d-flex align-items-center justify-content-center"
+       style="right: 18px; bottom: 18px; width: 56px; height: 56px; background: #25D366; color: white; border-radius: 50%; box-shadow: 0 8px 20px rgba(0,0,0,0.2); z-index: 9999;">
+        <i class="bi bi-whatsapp fs-3"></i>
+    </a>
+
+    <div id="cbt-toggle" class="position-fixed d-flex align-items-center justify-content-center"
+         style="right: 18px; bottom: 86px; width: 56px; height: 56px; background: #111827; color: white; border-radius: 50%; box-shadow: 0 8px 20px rgba(0,0,0,0.2); z-index: 9999; cursor:pointer;">
+        <i class="bi bi-chat-dots fs-4"></i>
+    </div>
+
+    <div id="cbt-panel" class="position-fixed" style="right: 18px; bottom: 150px; width: 320px; max-width: 92vw; display:none; z-index: 9999;">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-dark text-white py-2 d-flex justify-content-between align-items-center">
+                <span class="small fw-bold">Asistente CAMPOVERDE</span>
+                <button type="button" class="btn btn-sm btn-light" id="cbt-close">&times;</button>
+            </div>
+            <div class="card-body" style="max-height: 320px; overflow:auto;" id="cbt-messages">
+                <div class="text-muted small">Hola, ¿en qué te ayudo? Puedo responder sobre:
+                    <ul class="small mb-2">
+                        <li>Horarios</li>
+                        <li>Métodos de pago</li>
+                        <li>Zonas de entrega</li>
+                    </ul>
+                </div>
+                <div class="d-grid gap-2 mb-2">
+                    <button class="btn btn-outline-dark btn-sm" data-cbt="horarios">Horarios</button>
+                    <button class="btn btn-outline-dark btn-sm" data-cbt="métodos de pago">Métodos de pago</button>
+                    <button class="btn btn-outline-dark btn-sm" data-cbt="zonas de entrega">Zonas de entrega</button>
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <form id="cbt-form" class="d-flex gap-2">
+                    <input id="cbt-input" type="text" class="form-control form-control-sm" placeholder="Escribe tu pregunta...">
+                    <button class="btn btn-dark btn-sm" type="submit">Enviar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      (function(){
+        const toggle = document.getElementById('cbt-toggle');
+        const panel = document.getElementById('cbt-panel');
+        const closeBtn = document.getElementById('cbt-close');
+        const input = document.getElementById('cbt-input');
+        const form = document.getElementById('cbt-form');
+        const box = document.getElementById('cbt-messages');
+        if (!toggle || !panel) return;
+        const open = () => panel.style.display = '';
+        const close = () => panel.style.display = 'none';
+        toggle.addEventListener('click', open);
+        closeBtn && closeBtn.addEventListener('click', close);
+        const render = (who, text) => {
+          const div = document.createElement('div');
+          div.className = 'small mb-2';
+          div.innerHTML = '<strong>'+who+':</strong> '+text;
+          box.appendChild(div);
+          box.scrollTop = box.scrollHeight;
+        };
+        const ask = async (q) => {
+          render('Tú', q);
+          try {
+            const r = await fetch('/chatbot/qa/?q=' + encodeURIComponent(q));
+            const j = await r.json();
+            render('Bot', j.answer || 'No pude entenderte, intenta con otra pregunta.');
+          } catch(e) {
+            render('Bot', 'Ocurrió un error. Intenta de nuevo.');
+          }
+        };
+        document.querySelectorAll('[data-cbt]').forEach(btn=>{
+          btn.addEventListener('click', ()=> ask(btn.getAttribute('data-cbt')));
+        });
+        form && form.addEventListener('submit', (ev)=>{
+          ev.preventDefault();
+          const q = (input.value || '').trim();
+          if (!q) return;
+          input.value = '';
+          ask(q);
+        });
+      })();
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 

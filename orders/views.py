@@ -5,6 +5,9 @@ from django.utils.http import urlencode
 from decimal import Decimal
 from products.models import Product
 from .models import ShippingZone
+from django.http import HttpResponse
+from django.utils import timezone
+from django.contrib.admin.views.decorators import staff_member_required
 
 def _get_cart(session):
     return session.setdefault("cart", {})
@@ -112,5 +115,84 @@ def set_shipping_options(request):
     request.session["shipping"] = {"method": method, "zone_id": zone_id, "address": address}
     _save_session(request)
     return redirect("cart_view")
+
+
+@staff_member_required
+def order_invoice_pdf(request, order_id):
+    from .models import Order, OrderItem
+    order = get_object_or_404(Order, pk=order_id)
+    items = OrderItem.objects.filter(order=order).select_related("product")
+    try:
+        from fpdf import FPDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, f"Factura CAMPOVERDE - Pedido #{order.id}", ln=True)
+        pdf.set_font("Arial", "", 11)
+        pdf.cell(0, 8, f"Fecha: {order.created_at.strftime('%Y-%m-%d %H:%M')}", ln=True)
+        pdf.cell(0, 8, f"Cliente: {order.customer.get_username()}", ln=True)
+        if order.customer_phone:
+            pdf.cell(0, 8, f"Teléfono: {order.customer_phone}", ln=True)
+        if order.address:
+            pdf.multi_cell(0, 8, f"Dirección: {order.address}")
+        pdf.ln(2)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(100, 8, "Producto", 1)
+        pdf.cell(30, 8, "Cantidad", 1, align="R")
+        pdf.cell(60, 8, "Subtotal", 1, ln=True, align="R")
+        pdf.set_font("Arial", "", 11)
+        total = Decimal("0")
+        for it in items:
+            subtotal = Decimal(it.quantity) * Decimal(it.price)
+            total += subtotal
+            pdf.cell(100, 8, it.product.name, 1)
+            pdf.cell(30, 8, str(it.quantity), 1, align="R")
+            pdf.cell(60, 8, f"${subtotal}", 1, ln=True, align="R")
+        pdf.ln(2)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(130, 8, "Total", 1)
+        pdf.cell(60, 8, f"${total}", 1, ln=True, align="R")
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="factura_{order.id}.pdf"'
+        response.write(pdf.output(dest='S').encode('latin-1'))
+        return response
+    except Exception:
+        return render(request, "orders/invoice_fallback.html", {"order": order, "items": items})
+
+
+@staff_member_required
+def monthly_sales_pdf(request):
+    from .models import Order, OrderItem
+    now = timezone.now()
+    month_orders = Order.objects.filter(created_at__year=now.year, created_at__month=now.month)
+    total = sum((o.total for o in month_orders), Decimal("0"))
+    try:
+        from fpdf import FPDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, f"Reporte Mensual de Ventas - {now.strftime('%B %Y')}", ln=True, align='C')
+        pdf.ln(4)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(30, 8, "ID", 1)
+        pdf.cell(80, 8, "Cliente", 1)
+        pdf.cell(40, 8, "Fecha", 1)
+        pdf.cell(40, 8, "Total", 1, ln=True, align="R")
+        pdf.set_font("Arial", "", 11)
+        for o in month_orders:
+            pdf.cell(30, 8, str(o.id), 1)
+            pdf.cell(80, 8, o.customer.get_username(), 1)
+            pdf.cell(40, 8, o.created_at.strftime("%d/%m/%Y"), 1)
+            pdf.cell(40, 8, f"${o.total}", 1, ln=True, align="R")
+        pdf.ln(4)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(150, 8, "TOTAL MES", 0)
+        pdf.cell(40, 8, f"${total}", 0, ln=True, align="R")
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="reporte_{now.strftime("%m_%Y")}.pdf"'
+        response.write(pdf.output(dest='S').encode('latin-1'))
+        return response
+    except Exception:
+        return render(request, "orders/report_fallback.html", {"orders": month_orders, "total": total, "now": now})
 
 # Create your views here.

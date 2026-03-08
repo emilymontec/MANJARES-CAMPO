@@ -1,5 +1,13 @@
 from django.urls import path
-from .views import cart_view, add_to_cart, remove_from_cart, quick_buy_product, set_shipping_options
+from .views import (
+    cart_view,
+    add_to_cart,
+    remove_from_cart,
+    quick_buy_product,
+    set_shipping_options,
+    order_invoice_pdf,
+    monthly_sales_pdf,
+)
 
 urlpatterns = [
     path('carrito/', cart_view, name='cart_view'),
@@ -7,4 +15,6 @@ urlpatterns = [
     path('carrito/quitar/<int:product_id>/', remove_from_cart, name='remove_from_cart'),
     path('comprar/rapido/<int:product_id>/', quick_buy_product, name='quick_buy_product'),
     path('carrito/envio/', set_shipping_options, name='set_shipping_options'),
+    path('admin/orders/invoice/<int:order_id>/', order_invoice_pdf, name='order_invoice_pdf'),
+    path('admin/orders/reports/monthly/', monthly_sales_pdf, name='monthly_sales_pdf'),
 ]

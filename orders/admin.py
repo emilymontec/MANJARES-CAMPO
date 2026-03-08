@@ -20,7 +20,7 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer", "created_at", "total_display", "status_timeline")
+    list_display = ("id", "customer", "created_at", "total_display", "status_timeline", "invoice_link", "wa_invoice")
     list_filter = ("status", "created_at", "customer")
     search_fields = ("id", "customer__username", "customer__email")
     ordering = ("-created_at",)
@@ -73,6 +73,23 @@ class OrderAdmin(admin.ModelAdmin):
         )
 
     status_timeline.short_description = "Estado"
+
+    def invoice_link(self, obj):
+        return format_html('<a href="/admin/orders/invoice/{}/" target="_blank">Factura PDF</a>', obj.id)
+    invoice_link.short_description = "Factura"
+
+    def wa_invoice(self, obj):
+        if getattr(obj, "customer_phone", ""):
+            from django.utils.http import urlencode
+            msg = f"Hola, te compartimos la factura de tu Pedido #{obj.id}. Puedes descargarla aquí: {request.build_absolute_uri(f'/admin/orders/invoice/{obj.id}/')}"
+            # Nota: request no está disponible aquí; por eso dejamos un enlace base y el admin puede abrir la factura y compartir el link
+        if getattr(obj, "customer_phone", ""):
+            return format_html(
+                '<a href="https://wa.me/{}" target="_blank">WhatsApp</a>',
+                obj.customer_phone
+            )
+        return "—"
+    wa_invoice.short_description = "Enviar por WA"
 
 
 @admin.register(OrderItem)

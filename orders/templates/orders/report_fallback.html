@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Reporte Mensual</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>body { padding: 2rem; }</style>
+</head>
+<body>
+  <h1>Reporte Mensual de Ventas - {{ now|date:"F Y" }}</h1>
+  <table class="table table-striped">
+    <thead><tr><th>ID</th><th>Cliente</th><th>Fecha</th><th class="text-end">Total</th></tr></thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td>{{ o.id }}</td>
+        <td>{{ o.customer.username }}</td>
+        <td>{{ o.created_at|date:"d/m/Y" }}</td>
+        <td class="text-end">${{ o.total }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-muted">Sin ventas en el mes</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="text-end">
+    <strong>Total mes: ${{ total }}</strong>
+  </div>
+  <p class="text-muted mt-3">Para PDF, instala la librería FPDF o usa “Imprimir → Guardar como PDF”.</p>
+</body>
+</html>
