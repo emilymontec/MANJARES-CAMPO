@@ -25,12 +25,12 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-insecure-key-change-me')
+SECRET_KEY = 'django-insecure--f388k!-+&4lsq=lk8db=1+fz4n9f+%bu%%c!-qxz22vl4hvld'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [h for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h] or []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -85,14 +85,11 @@ WSGI_APPLICATION = 'CAMPOVERDE.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', ''),
-        'PORT': os.environ.get('DB_PORT', ''),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -144,3 +141,6 @@ DISCOUNT_PERCENT = int(os.environ.get('DISCOUNT_PERCENT', '0'))
 BUSINESS_HOURS = os.environ.get('BUSINESS_HOURS', 'Lun-Sáb 8:00-18:00 · Dom 8:00-13:00')
 SOCIAL_FACEBOOK_URL = os.environ.get('SOCIAL_FACEBOOK_URL', 'https://facebook.com/tu_pagina')
 SOCIAL_INSTAGRAM_URL = os.environ.get('SOCIAL_INSTAGRAM_URL', 'https://instagram.com/tu_perfil')
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

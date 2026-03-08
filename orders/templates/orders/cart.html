@@ -61,7 +61,7 @@
                                     ${{ i.subtotal }}
                                 </td>
                                 <td class="pe-4 py-4 text-end">
-                                    <a href="/carrito/quitar/{{ i.product.id }}/"
+                                    <a href="{% url 'remove_from_cart' i.product.id %}"
                                         class="btn btn-link text-chilli p-2 hover-chilli"
                                         title="Eliminar este producto">
                                         <i class="bi bi-trash3-fill fs-5"></i>
@@ -75,7 +75,7 @@
                                         <i class="bi bi-cart-x text-muted opacity-25" style="font-size: 7rem;"></i>
                                         <h3 class="mt-4 fw-800 text-farm">¡Tu cesta parece un desierto!</h3>
                                         <p class="text-muted mb-4">Aún no has añadido ninguna delicia natural.</p>
-                                        <a href="/"
+                                        <a href="{% url 'catalog' %}"
                                             class="btn-round btn-verde mt-2 text-decoration-none shadow-lg px-5">Regresar
                                             al Huerto</a>
                                     </div>
@@ -128,30 +128,39 @@
                             <label class="small fw-bold text-muted d-block mb-2">Modalidad de entrega</label>
                             <div class="d-flex gap-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="method" id="m_delivery" value="delivery" {% if shipping_opts.method != 'pickup' %}checked{% endif %}>
+                                    <input class="form-check-input" type="radio" name="method" id="m_delivery"
+                                        value="delivery" {% if shipping_opts.method !='pickup' %}checked{% endif %}>
                                     <label class="form-check-label small" for="m_delivery">Domicilio</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="method" id="m_pickup" value="pickup" {% if shipping_opts.method == 'pickup' %}checked{% endif %}>
+                                    <input class="form-check-input" type="radio" name="method" id="m_pickup"
+                                        value="pickup" {% if shipping_opts.method=='pickup' %}checked{% endif %}>
                                     <label class="form-check-label small" for="m_pickup">Recoger en punto</label>
                                 </div>
                             </div>
                         </div>
-                        <div id="zone_wrap" class="mb-3" {% if shipping_opts.method == 'pickup' %}style="display:none"{% endif %}>
-                            <label class="small fw-bold text-muted d-block mb-2">Zona (Área Metropolitana del Atlántico)</label>
+                        <div id="zone_wrap" class="mb-3" {% if shipping_opts.method=='pickup' %}style="display:none" {%
+                            endif %}>
+                            <label class="small fw-bold text-muted d-block mb-2">Zona (Área Metropolitana del
+                                Atlántico)</label>
                             <select class="form-select" name="zone_id">
                                 <option value="">Tarifa estándar</option>
                                 {% for z in zones %}
-                                  <option value="{{ z.id }}" {% if shipping_opts.zone_id|default:'' == z.id|stringformat:'s' %}selected{% endif %}>{{ z.name }} - ${{ z.cost }}</option>
+                                <option value="{{ z.id }}" {% if shipping_opts.zone_id|default:''==z.id|stringformat:'s'
+                                    %}selected{% endif %}>{{ z.name }} - ${{ z.cost }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div id="addr_wrap" class="mb-3" {% if shipping_opts.method == 'pickup' %}style="display:none"{% endif %}>
+                        <div id="addr_wrap" class="mb-3" {% if shipping_opts.method=='pickup' %}style="display:none" {%
+                            endif %}>
                             <label class="small fw-bold text-muted d-block mb-2">Dirección (si es domicilio)</label>
-                            <input class="form-control" type="text" name="address" value="{{ shipping_opts.address|default:'' }}" placeholder="Barrio, calle, referencia">
+                            <input class="form-control" type="text" name="address"
+                                value="{{ shipping_opts.address|default:'' }}" placeholder="Barrio, calle, referencia">
                         </div>
                         <div class="d-grid">
-                            <button class="btn-round py-2 bg-cream fw-800" style="color: var(--farm-green); border: 2px solid var(--farm-green);">Actualizar envío</button>
+                            <button class="btn-round py-2 bg-cream fw-800"
+                                style="color: var(--farm-green); border: 2px solid var(--farm-green);">Actualizar
+                                envío</button>
                         </div>
                     </form>
                 </div>
@@ -178,7 +187,7 @@
                 </div>
                 {% endif %}
 
-                <a href="/" class="btn-round w-100 py-3 text-center transition-all bg-cream fw-800"
+                <a href="{% url 'catalog' %}" class="btn-round w-100 py-3 text-center transition-all bg-cream fw-800"
                     style="color: var(--farm-green); border: 2px solid var(--farm-green);">
                     Continuar Cosechando
                 </a>
@@ -196,22 +205,25 @@
     .uppercase {
         text-transform: uppercase;
     }
-    #zone_wrap[style*="display:none"], #addr_wrap[style*="display:none"] { opacity: 0.6; }
-    /* Optional: simple client-side toggle */
-    document.addEventListener('DOMContentLoaded', () => {
-      const md = document.getElementById('m_delivery');
-      const mp = document.getElementById('m_pickup');
-      const zw = document.getElementById('zone_wrap');
-      const aw = document.getElementById('addr_wrap');
-      if (md && mp && zw && aw) {
-        const sync = () => {
-          const show = md.checked;
-          zw.style.display = show ? '' : 'none';
-          aw.style.display = show ? '' : 'none';
-        };
-        md.addEventListener('change', sync);
-        mp.addEventListener('change', sync);
-      }
-    });
 </style>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const md = document.getElementById('m_delivery');
+        const mp = document.getElementById('m_pickup');
+        const zw = document.getElementById('zone_wrap');
+        const aw = document.getElementById('addr_wrap');
+        if (md && mp && zw && aw) {
+            const sync = () => {
+                const show = md.checked;
+                zw.style.display = show ? '' : 'none';
+                aw.style.display = show ? '' : 'none';
+            };
+            md.addEventListener('change', sync);
+            mp.addEventListener('change', sync);
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

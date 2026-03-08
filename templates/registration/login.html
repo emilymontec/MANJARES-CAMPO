@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión - CAMPOVERDE{% endblock %}
+
+{% block content %}
+<div class="container py-7 animate-up">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="glass-card p-5 rounded-5 border-2 shadow-lg">
+                <div class="text-center mb-5">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png" alt="Logo"
+                        class="rounded-circle mb-3"
+                        style="width: 80px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">
+                    <h2 class="fw-800 text-farm display-6 mb-1">Cosechemos juntos</h2>
+                    <p class="text-muted">Ingresa tus datos para continuar con tu pedido.</p>
+                </div>
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                    <div class="alert alert-danger rounded-4 small border-0 py-3">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        Usuario o contraseña incorrectos. Intenta de nuevo.
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label class="small fw-800 text-muted uppercase letters-wide mb-2 d-block">Usuario</label>
+                        <div class="search-bar p-1 ps-4 shadow-none bg-light border-0">
+                            <i class="bi bi-person text-muted"></i>
+                            {{ form.username }}
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <div class="d-flex justify-content-between">
+                            <label
+                                class="small fw-800 text-muted uppercase letters-wide mb-2 d-block">Contraseña</label>
+                            <a href="#" class="x-small text-lettuce fw-bold text-decoration-none">¿Olvidaste tu
+                                contraseña?</a>
+                        </div>
+                        <div class="search-bar p-1 ps-4 shadow-none bg-light border-0">
+                            <i class="bi bi-lock text-muted"></i>
+                            {{ form.password }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn-round btn-verde py-3 shadow-lg">
+                            <span class="fs-5">Ingresar al Huerto</span>
+                        </button>
+                    </div>
+
+                    <p class="text-center text-muted small mb-0">
+                        ¿Aún no eres parte de la huerta? <a href="#"
+                            class="text-lettuce fw-bold text-decoration-none">Regístrate ahora</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .py-7 {
+        padding-top: 6rem;
+        padding-bottom: 6rem;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    form input {
+        border: none !important;
+        background: transparent !important;
+        width: 100% !important;
+        outline: none !important;
+        padding: 12px 10px !important;
+        font-weight: 600;
+        color: var(--text);
+    }
+</style>
+{% endblock %}
