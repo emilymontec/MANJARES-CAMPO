@@ -27,7 +27,7 @@
                 
                 <div class="flex-grow-1">
                     <h4 class="fs-5 fw-bold mb-1" style="font-family: var(--font-head);">{{ item.product.name }}</h4>
-                    <p class="text-secondary fw-semibold m-0">${{ item.product.price }} c/u</p>
+                    <p class="text-secondary fw-semibold m-0">${{ item.price }} c/u</p>
                 </div>
 
                 <div class="text-center">
@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="text-end" style="min-width: 90px;">
-                    <h4 class="fw-black mb-1" style="color: var(--brand-lettuce); font-family: var(--font-app);">${{ item.subtotal }}</h4>
+                    <h4 class="fw-black mb-1" style="color: var(--brand-lettuce); font-family: var(--font-app);">${{ item.total_price }}</h4>
                     <a href="{% url 'remove_from_cart' item.product.id %}" class="text-muted small fw-bold text-decoration-none" style="color: var(--brand-pumpkin) !important;">Eliminar</a>
                 </div>
             </div>

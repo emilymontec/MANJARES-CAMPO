@@ -124,6 +124,8 @@ def admin_inventory_config(request):
         config.facebook_url = request.POST.get('facebook_url')
         config.instagram_url = request.POST.get('instagram_url')
         config.order_wa_prefix = request.POST.get('order_wa_prefix')
+        config.default_shipping_cost = request.POST.get('default_shipping_cost', 10000)
+        config.free_shipping_threshold = request.POST.get('free_shipping_threshold', 100000)
         config.save()
         messages.success(request, "Configuración actualizada correctamente.")
         return redirect('admin_inventory_config')

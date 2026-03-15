@@ -10,6 +10,10 @@ class SiteConfiguration(models.Model):
     welcome_message = models.TextField(default="¡Hola! Bienvenido a MANJARES DEL CAMPO. ¿En qué podemos ayudarte?", verbose_name="Mensaje de bienvenida")
     order_wa_prefix = models.CharField(max_length=100, default="Hola!, quiero hacer este pedido de Manjares del Campo", verbose_name="Prefijo de pedido WhatsApp")
     
+    # Tarifas de Envío
+    default_shipping_cost = models.IntegerField(default=10000, verbose_name="Costo de envío base")
+    free_shipping_threshold = models.IntegerField(default=100000, verbose_name="Umbral de envío gratis")
+    
     class Meta:
         verbose_name = "Configuración del Sitio"
         verbose_name_plural = "Configuraciones del Sitio"

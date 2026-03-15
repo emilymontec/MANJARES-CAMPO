@@ -189,7 +189,10 @@ else:
 
 LOGIN_REDIRECT_URL = 'login_success'
 LOGOUT_REDIRECT_URL = 'catalog'
-LOGIN_URL = '/admin/login/'
+# Session settings
+CART_SESSION_ID = 'cart'
+SESSION_COOKIE_AGE = 1209600 # 2 weeks
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '573001234567')
 DEFAULT_SHIPPING_COST = int(os.environ.get('DEFAULT_SHIPPING_COST', '10000'))

@@ -10,36 +10,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.admin.views.decorators import staff_member_required
 from inventory.models import SiteConfiguration
+from .cart import Cart
 
 # --- FUNCIONES DE AYUDA ---
-
-def _get_cart(session):
-    """Retorna el diccionario del carrito de la sesión."""
-    return session.setdefault("cart", {})
-
-def _save_session(request):
-    """Marca la sesión como modificada para persistir cambios."""
-    request.session.modified = True
-
-def _calculate_cart_data(cart):
-    """Calcula items válidos y total del carrito."""
-    items = []
-    total = Decimal("0")
-    for pid, qty in cart.items():
-        try:
-            product = Product.objects.filter(id=int(pid), available=True).first()
-            if product:
-                quantity = max(1, int(qty))
-                subtotal = Decimal(str(product.price)) * quantity
-                total += subtotal
-                items.append({
-                    'product': product,
-                    'quantity': quantity,
-                    'subtotal': subtotal
-                })
-        except (ValueError, TypeError):
-            continue
-    return items, total
 
 def _get_shipping_cost(total_after_discount, shipping_opts):
     """Calcula el costo de envío basado en reglas de negocio."""
@@ -47,8 +20,12 @@ def _get_shipping_cost(total_after_discount, shipping_opts):
     if method == 'pickup':
         return Decimal("0")
     
+    config = SiteConfiguration.objects.first()
+    default_cost = config.default_shipping_cost if config else getattr(settings, "DEFAULT_SHIPPING_COST", 10000)
+    free_threshold = config.free_shipping_threshold if config else getattr(settings, "FREE_SHIPPING_OVER", 100000)
+    
     zone_id = shipping_opts.get('zone_id')
-    cost = Decimal(str(getattr(settings, "DEFAULT_SHIPPING_COST", 10000)))
+    cost = Decimal(str(default_cost))
     
     if zone_id:
         try:
@@ -58,18 +35,20 @@ def _get_shipping_cost(total_after_discount, shipping_opts):
             pass
             
     # Umbral de envío gratis
-    threshold = Decimal(str(getattr(settings, "FREE_SHIPPING_OVER", 100000)))
-    if total_after_discount >= threshold:
+    if total_after_discount >= Decimal(str(free_threshold)):
         return Decimal("0")
         
     return cost
+
+from .cart import Cart
 
 # --- VISTAS PÚBLICAS ---
 
 def cart_view(request):
     """Vista principal del carrito con toda la lógica de cálculo y persistencia."""
-    cart = _get_cart(request.session)
-    items, total = _calculate_cart_data(cart)
+    cart = Cart(request)
+    items = list(cart)
+    total = cart.get_total_price()
     
     # Descuento (opcional, configurable en settings)
     discount_pct = Decimal(str(getattr(settings, "DISCOUNT_PERCENT", 0)))
@@ -118,7 +97,7 @@ def cart_view(request):
                 order=order,
                 product=item['product'],
                 quantity=item['quantity'],
-                price=item['product'].price
+                price=item['price']
             )
         order_id = order.id
 
@@ -130,7 +109,7 @@ def cart_view(request):
     # Generar mensaje de WhatsApp
     wa_msg = f"{wa_prefix}:\n\n"
     for i in items:
-        wa_msg += f"- {i['quantity']} {i['product'].get_unit_display()} x {i['product'].name} = ${i['subtotal']}\n"
+        wa_msg += f"- {i['quantity']} {i['product'].get_unit_display()} x {i['product'].name} = ${i['total_price']}\n"
     wa_msg += f"\nTotal: ${grand_total}\n"
     
     delivery_label = "Domicilio" if shipping_opts.get('method') == 'delivery' else "Recoger"
@@ -166,36 +145,33 @@ def cart_view(request):
 @require_POST
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id, available=True)
-    cart = _get_cart(request.session)
+    cart = Cart(request)
     try:
         qty = int(request.POST.get("qty", 1))
     except (ValueError, TypeError):
         qty = 1
     
-    str_id = str(product_id)
-    cart[str_id] = cart.get(str_id, 0) + max(1, qty)
-    _save_session(request)
+    cart.add(product, quantity=qty)
     return redirect("cart_view")
 
 @require_POST
 def update_cart_item(request, product_id):
-    cart = _get_cart(request.session)
-    str_id = str(product_id)
+    product = get_object_or_404(Product, id=product_id)
+    cart = Cart(request)
     try:
         qty = int(request.POST.get("qty", 1))
         if qty > 0:
-            cart[str_id] = qty
+            cart.add(product, quantity=qty, override_quantity=True)
         else:
-            cart.pop(str_id, None)
+            cart.remove(product)
     except (ValueError, TypeError):
         pass
-    _save_session(request)
     return redirect("cart_view")
 
 def remove_from_cart(request, product_id):
-    cart = _get_cart(request.session)
-    cart.pop(str(product_id), None)
-    _save_session(request)
+    product = get_object_or_404(Product, id=product_id)
+    cart = Cart(request)
+    cart.remove(product)
     return redirect("cart_view")
 
 @require_POST
@@ -208,7 +184,7 @@ def set_shipping_options(request):
         "zone_id": zone_id, 
         "address": address
     }
-    _save_session(request)
+    request.session.modified = True
     return redirect("cart_view")
 
 @staff_member_required(login_url='login')

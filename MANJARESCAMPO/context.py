@@ -16,6 +16,8 @@ def app_context(request):
             "SOCIAL_INSTAGRAM_URL": "#",
             "WELCOME_MESSAGE": "¡Hola! Bienvenido.",
             "ORDER_WA_PREFIX": "Hola!, quiero hacer este pedido",
+            "DEFAULT_SHIPPING_COST": getattr(settings, "DEFAULT_SHIPPING_COST", 10000),
+            "FREE_SHIPPING_OVER": getattr(settings, "FREE_SHIPPING_OVER", 100000),
         }
     else:
         config_data = {
@@ -25,24 +27,15 @@ def app_context(request):
             "SOCIAL_INSTAGRAM_URL": config.instagram_url,
             "WELCOME_MESSAGE": config.welcome_message,
             "ORDER_WA_PREFIX": config.order_wa_prefix,
+            "DEFAULT_SHIPPING_COST": config.default_shipping_cost,
+            "FREE_SHIPPING_OVER": config.free_shipping_threshold,
         }
 
     # 2. Resumen del Carrito (Conteo y Total)
-    cart = request.session.get("cart", {})
-    cart_count = 0
-    cart_total = Decimal("0")
-    
-    if cart:
-        for pid, qty in cart.items():
-            try:
-                # Usamos values para eficiencia
-                p = Product.objects.filter(id=int(pid), available=True).values("price").first()
-                if p:
-                    quantity = max(1, int(qty))
-                    cart_count += quantity
-                    cart_total += Decimal(str(p["price"])) * quantity
-            except (ValueError, TypeError):
-                continue
+    from orders.cart import Cart
+    cart = Cart(request)
+    cart_count = len(cart)
+    cart_total = cart.get_total_price()
     
     # 3. Datos Globales adicionales
     ctx = {

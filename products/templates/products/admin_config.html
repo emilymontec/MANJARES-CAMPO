@@ -50,6 +50,24 @@
                         <textarea name="order_wa_prefix" rows="2" class="form-control form-control-lg shadow-sm rounded-4 border-2 px-4" style="border-color: var(--brand-light) !important;">{{ config.order_wa_prefix }}</textarea>
                         <div class="form-text small">Este texto aparecerá al inicio del mensaje que el cliente envía por WhatsApp.</div>
                     </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold uppercase text-muted letters-wide">Costo de Envío Base</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border-2" style="border-color: var(--brand-light) !important;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-truck text-farm"></i></span>
+                            <input type="number" name="default_shipping_cost" value="{{ config.default_shipping_cost }}" class="form-control border-0 px-4">
+                        </div>
+                        <div class="form-text small">Se aplica si no se selecciona una zona específica.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold uppercase text-muted letters-wide">Umbral Envío Gratis</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border-2" style="border-color: var(--brand-light) !important;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-gift text-lettuce"></i></span>
+                            <input type="number" name="free_shipping_threshold" value="{{ config.free_shipping_threshold }}" class="form-control border-0 px-4">
+                        </div>
+                        <div class="form-text small">Monto mínimo de compra para que el envío sea $0.</div>
+                    </div>
                 </div>
 
                 <div class="mt-5 pt-4 border-top">
