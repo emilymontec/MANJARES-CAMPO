@@ -1,0 +1,44 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Confirmar Eliminación - MANJARES DEL CAMPO{% endblock %}
+{% block page_title %}Confirmar Eliminación de Categoría{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-xl-5">
+        <div class="card p-5 rounded-4 shadow-sm border-0 animate-up text-center">
+            <div class="mb-4">
+                <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 5rem;"></i>
+            </div>
+            
+            <h2 class="fw-800 text-farm mb-3" style="font-family: var(--font-head);">¿Estás seguro?</h2>
+            <p class="text-muted fs-5 mb-5">Estás a punto de eliminar la categoría <strong class="text-farm">"{{ category.name }}"</strong>.</p>
+
+            <div class="alert alert-warning border-0 rounded-4 p-4 text-start mb-5 shadow-sm">
+                <h6 class="fw-bold d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-info-circle-fill"></i> Importante:
+                </h6>
+                <p class="small mb-0 opacity-75">
+                    Al eliminar esta categoría, los productos asociados seguirán existiendo pero quedarán sin categoría asignada. Esta acción no se puede deshacer.
+                </p>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="{% url 'admin_category_list' %}" class="btn btn-light rounded-pill w-100 py-3 fw-bold text-muted btn-animate">
+                            No, cancelar
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-chilli w-100 rounded-pill py-3 fw-bold shadow-lg btn-animate fs-5">
+                            <i class="bi bi-trash3-fill me-2"></i>Sí, eliminar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

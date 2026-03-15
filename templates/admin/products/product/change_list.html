@@ -2,9 +2,13 @@
 {% load i18n admin_urls static %}
 
 {% block object-tools %}
-<div class="mb-3">
-  <a href="{% url 'admin:products_product_add' %}" class="button" style="display:inline-block;padding:12px 18px;font-size:16px;background:#111;color:#fff;border-radius:8px;text-decoration:none;">
-    ➕ Agregar producto
+<div style="margin-bottom: 25px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+  <div>
+    <h2 style="margin:0; color: #1e293b; font-size: 1.5rem;">Gestión de Inventario</h2>
+    <p style="margin:5px 0 0; color: #64748b;">Añade, edita o elimina productos de tu catálogo</p>
+  </div>
+  <a href="{% url 'admin:products_product_add' %}" class="button" style="display:inline-block; padding:16px 32px; font-size:18px; font-weight: 700; background:#16a34a; color:#fff; border-radius:10px; text-decoration:none; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition: all 0.2s;">
+    ➕ Agregar nuevo producto
   </a>
 </div>
 {{ block.super }}

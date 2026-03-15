@@ -1,0 +1,37 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Eliminar Producto - MANJARES DEL CAMPO{% endblock %}
+{% block page_title %}Eliminar Producto{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card p-5 rounded-4 shadow-sm border-0 text-center animate-up">
+            <div class="p-4 bg-chilli bg-opacity-10 rounded-circle d-inline-block mb-4" style="background: rgba(191, 30, 45, 0.1) !important;">
+                <i class="bi bi-trash3-fill text-chilli display-4"></i>
+            </div>
+            
+            <h2 class="fw-800 text-farm mb-3">¿Estás seguro de eliminar este producto?</h2>
+            <p class="text-secondary fs-5 mb-5">
+                Estás a punto de eliminar <strong>{{ product.name }}</strong> de forma permanente. Esta acción no se puede deshacer.
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="{% url 'admin_products_list' %}" class="btn btn-light rounded-pill w-100 py-3 fw-bold text-muted btn-animate">
+                            No, cancelar
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn-chilli w-100 rounded-pill py-3 fw-bold shadow-lg btn-animate fs-5">
+                            <i class="bi bi-trash3-fill me-2"></i>Sí, eliminar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

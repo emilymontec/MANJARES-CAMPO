@@ -20,9 +20,9 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer", "created_at", "total_display", "status_timeline", "invoice_link", "wa_invoice")
-    list_filter = ("status", "created_at", "customer")
-    search_fields = ("id", "customer__username", "customer__email")
+    list_display = ("id", "customer", "customer_phone", "created_at", "total_display", "delivery_method", "status_timeline", "invoice_link", "wa_invoice")
+    list_filter = ("status", "delivery_method", "created_at", "customer")
+    search_fields = ("id", "customer__username", "customer__email", "customer_phone")
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
     inlines = [OrderItemInline]
@@ -36,7 +36,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     ORDER_FLOW = ["pending", "confirmed", "preparing", "sent", "delivered"]
     LABELS = {
-        "pending": "Pendiente",
+        "pending": "Nuevo pedido",
         "confirmed": "Confirmado",
         "preparing": "En preparación",
         "sent": "Enviado",
@@ -81,15 +81,19 @@ class OrderAdmin(admin.ModelAdmin):
     def wa_invoice(self, obj):
         if getattr(obj, "customer_phone", ""):
             from django.utils.http import urlencode
-            msg = f"Hola, te compartimos la factura de tu Pedido #{obj.id}. Puedes descargarla aquí: {request.build_absolute_uri(f'/admin/orders/invoice/{obj.id}/')}"
-            # Nota: request no está disponible aquí; por eso dejamos un enlace base y el admin puede abrir la factura y compartir el link
-        if getattr(obj, "customer_phone", ""):
+            from django.urls import reverse
+            # El admin genera el link para que el cliente lo descargue
+            base_url = "https://manjarescampo-shop.com" # Cambiar por el dominio real
+            path = reverse('order_invoice_pdf', args=[obj.id])
+            msg = f"Hola, te compartimos la factura de tu Pedido #{obj.id} de Manjares del Campo. Puedes descargarla aquí: {base_url}{path}"
+            
             return format_html(
-                '<a href="https://wa.me/{}" target="_blank">WhatsApp</a>',
-                obj.customer_phone
+                '<a href="https://wa.me/{}?{}" target="_blank" class="button" style="padding:4px 8px; background:#25D366; color:#fff; border-radius:4px; font-size:11px;">WhatsApp</a>',
+                obj.customer_phone,
+                urlencode({"text": msg})
             )
         return "—"
-    wa_invoice.short_description = "Enviar por WA"
+    wa_invoice.short_description = "Enviar Factura"
 
 
 @admin.register(OrderItem)

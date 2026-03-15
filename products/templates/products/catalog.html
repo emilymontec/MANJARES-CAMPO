@@ -1,234 +1,147 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Catálogo - CAMPOVERDE{% endblock %}
+{% block title %}Productos Frescos - MANJARES DEL CAMPO{% endblock %}
 
 {% block content %}
-<div class="hero-container container mb-5">
-    <div class="row g-4 align-items-stretch">
-        <div class="col-lg-8 animate-up">
-            <div class="main-hero d-flex align-items-center h-100">
-                <div class="hero-content position-relative z-index-1">
-                    <span class="badge bg-pumpkin text-white px-3 py-2 mb-4 animate-up"
-                        style="font-weight: 800; letter-spacing: 1px;">COSECHA DEL DÍA</span>
-                    <h1 class="hero-title mb-3">La frescura del campo,<br><span class="text-lettuce">{% if title_suffix %}{{ title_suffix }}{% else %}en la puerta de tu hogar.{% endif %}</span></h1>
-                    <p class="text-muted fs-5 mb-5 opacity-90" style="max-width: 500px;">
-                        Seleccionamos manualmente cada producto para garantizar que solo lo mejor llegue a tu mesa.
-                        Orgánico, sostenible y local.
-                    </p>
-                    <div class="d-flex gap-3">
-                        <a href="#productos" class="btn-round btn-verde shadow-lg">Empezar a Mercar</a>
-                        <a href="/?off=true#productos"
-                            class="btn-round bg-white text-farm border border-2 shadow-sm">Ver Ofertas</a>
-                    </div>
+
+<!-- OFFERS MODULE (Dynamic) -->
+{% if offer_products and not search_query and not selected_cat %}
+<div class="row g-4 mb-5 pop-in">
+    <div class="col-12">
+        <div class="bento p-4 p-md-5" style="background: linear-gradient(135deg, #FF9966, #FF5E62); border: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-800 text-white m-0" style="font-family: var(--font-head);"><i class="bi bi-fire me-2"></i>Ofertas del Día</h2>
+                    <p class="text-white opacity-90 m-0 fw-medium">Productos frescos con descuentos imperdibles.</p>
                 </div>
-                <!-- Imagen decorativa abstracta o flota -->
-                <div class="hero-decor d-none d-xl-block ms-auto">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png" alt="Decor"
-                        class="float-animation" style="width: 320px;">
-                </div>
+                <a href="{% url 'offers' %}" class="btn btn-light rounded-pill px-4 fw-bold text-danger shadow-sm">Ver Todo</a>
             </div>
-        </div>
-        <div class="col-lg-4 animate-up" style="animation-delay: 0.2s;">
-            <div class="side-promo h-100 glass-card">
-                <div class="mb-4">
-                    <i class="bi bi-stars fs-1" style="color: var(--lemon-green);"></i>
-                </div>
-                <h2 class="display-3 fw-800 mb-2">20% <span class="fs-4 text-lettuce">OFF</span></h2>
-                <p class="fw-bold fs-5 mb-4">En tu primera cosecha semanal.</p>
-                <div
-                    class="bg-white bg-opacity-10 p-4 rounded-4 border border-dashed border-white border-opacity-25 text-center mb-4">
-                    <span class="small opacity-75 d-block mb-1">CÓDIGO DE BIENVENIDA</span>
-                    <strong class="fs-4 fw-800" style="letter-spacing: 2px;">VIVECAMPO</strong>
-                </div>
-                <p class="small opacity-75">Válido para nuevos suscriptores del huerto.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container mb-6 py-5">
-    <div class="section-header text-center mb-5 animate-up">
-        <h6 class="text-lettuce fw-800 letters-wide uppercase x-small mb-2">Variedad Natural</h6>
-        <h2 class="fw-800 text-farm display-6">Nuestras Categorías</h2>
-        <div class="mx-auto bg-lettuce" style="width: 60px; height: 4px; border-radius: 2px;"></div>
-    </div>
-
-    <div class="d-flex gap-4 overflow-auto pb-4 pt-2 flex-nowrap hide-scrollbar" style="scrollbar-width: none;">
-        <a href="/"
-            class="cat-bubble glass-card flex-shrink-0 {% if not selected_cat %}active{% endif %}"><span>🌱</span>Todos</a>
-        {% for cat in categories %}
-        <a href="/?cat={{ cat.id }}"
-            class="cat-bubble glass-card flex-shrink-0 {% if selected_cat == cat.id %}active{% endif %}">
-            <span>{{ cat.icon|default:'🥦' }}</span>{{ cat.name }}
-        </a>
-        {% endfor %}
-    </div>
-</div>
-
-<div class="container pb-5" id="productos">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-4 animate-up">
-        <div class="border-start border-5 border-lettuce ps-4 py-2">
-            <h2 class="fw-800 text-farm display-6 mb-1">Cosecha Seleccionada</h2>
-            <p class="text-muted mb-0">Lo más fresco de esta temporada para ti.</p>
-        </div>
-        <div class="d-flex gap-3">
-            <select class="form-select border-2 rounded-pill px-4 py-2 fw-bold text-muted shadow-sm"
-                style="width: 200px;">
-                <option>Ordenar por...</option>
-                <option>Menor precio</option>
-                <option>Mayor precio</option>
-                <option>Más recientes</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="row g-4 g-xl-5">
-        {% for p in products %}
-        <div class="col-sm-6 col-md-4 col-lg-3 animate-up"
-            style="--delay: {{ forloop.counter0|add:1 }}00ms; animation-delay: var(--delay);">
-            <div class="product-card shadow-hover">
-                {% if forloop.first %}
-                <span class="badge-offer">POPULAR 🌱</span>
-                {% elif p.price < 5000 %} <span class="badge-offer"
-                    style="background: linear-gradient(135deg, var(--pumpkin), #ff7f00);">OFERTA</span>
-                    {% endif %}
-
-                    <div class="product-img-wrapper mb-4">
-                        {% if p.image %}
-                        <img src="{{ p.image }}" alt="{{ p.name }}" class="img-fluid">
-                        {% else %}
-                        <div class="text-center p-5 opacity-25">
-                            <i class="bi bi-flower1" style="font-size: 5rem; color: var(--farm-green);"></i>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="text-start flex-grow-1 px-1">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="text-lettuce fw-800 x-small uppercase tracking-wide">100% Orgánico</span>
-                            <div class="text-warning x-small">
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                            </div>
-                        </div>
-                        <h5 class="fw-800 text-farm mb-2 fs-5">{{ p.name }}</h5>
-                        <p class="text-muted small mb-4 line-clamp-2">
-                            {{ p.description|default:"Cultivado siguiendo métodos tradicionales sin químicos nocivos,
-                            recolectado en su punto óptimo de madurez." }}
-                        </p>
-                    </div>
-
-                    <div class="mt-auto pt-4 border-top border-light px-1">
-                        <div class="d-flex justify-content-between align-items-end mb-4">
-                            <div>
-                                <span class="text-muted x-small d-block fw-bold mb-1">PRECIO</span>
-                                <span class="h3 fw-800 text-farm mb-0">${{ p.price }}</span>
-                            </div>
-                            <span class="text-muted small fw-bold">/ Unidad</span>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <form action="{% url 'add_to_cart' p.id %}" method="post" class="flex-grow-1">
-                                {% csrf_token %}
-                                <input type="hidden" name="qty" value="1">
-                                <button type="submit"
-                                    class="btn-add d-flex align-items-center justify-content-center gap-2 shadow-sm">
-                                    <i class="bi bi-cart-plus-fill fs-5"></i> <span>Añadir</span>
-                                </button>
-                            </form>
-                            {% if p.wa_link %}
-                            <a href="{{ p.wa_link }}" target="_blank"
-                                class="btn btn-outline-success border-2 rounded-3 px-3 d-flex align-items-center hover-scale shadow-sm"
-                                title="Consultar por WhatsApp">
-                                <i class="bi bi-whatsapp"></i>
-                            </a>
+            
+            <div class="row g-3">
+                {% for p in offer_products %}
+                <div class="col-6 col-md-3">
+                    <div class="bg-white rounded-4 p-3 h-100 shadow-sm bento-hover position-relative overflow-hidden">
+                        <span class="position-absolute top-0 end-0 bg-danger text-white px-3 py-1 fw-bold small rounded-bl-4" style="border-bottom-left-radius: 15px;">OFERTA</span>
+                        <div class="text-center mb-2" style="height: 100px; display: flex; align-items: center; justify-content: center;">
+                            {% if p.image %}
+                            <img src="{{ p.image.url }}" class="mw-100 mh-100 object-fit-contain">
+                            {% else %}
+                            <i class="bi bi-image text-muted opacity-25 fs-1"></i>
                             {% endif %}
                         </div>
+                        <h6 class="fw-bold text-farm mb-1 text-truncate">{{ p.name }}</h6>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-danger fw-800 fs-5">${{ p.offer_price }}</span>
+                            <span class="text-muted text-decoration-line-through small">${{ p.price }}</span>
+                        </div>
+                        <a href="{{ p.wa_link }}" target="_blank" class="btn btn-success btn-sm w-100 rounded-pill mt-2 fw-bold">
+                            <i class="bi bi-whatsapp"></i> Pedir
+                        </a>
                     </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
-        {% empty %}
-        <div class="col-12 py-7 text-center animate-up">
-            <div class="bg-cream rounded-5 p-5 border border-dashed border-2 shadow-inner">
-                <i class="bi bi-tree text-muted opacity-25" style="font-size: 8rem;"></i>
-                <h2 class="mt-4 fw-800 text-farm">El huerto está recuperando fuerzas</h2>
-                <p class="text-muted fs-5">Estamos preparando la nueva cosecha. Vuelve pronto para lo más fresco.</p>
-                <button class="btn-round btn-verde mt-3 px-5">Avísame al Cosechar</button>
-            </div>
-        </div>
-        {% endfor %}
     </div>
 </div>
+{% endif %}
 
-<style>
-    .mb-6 {
-        margin-bottom: 5rem;
-    }
+<!-- HERO BENTO (Optional, keep simplified or remove static offers) -->
+{% if not search_query and not selected_cat and not offer_products %}
+<div class="row g-4 mb-5 pop-in">
+    <div class="col-lg-12">
+        <div class="bento d-flex flex-column justify-content-center h-100 p-5 position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--brand-lettuce), var(--brand-farm)); border: none;">
+            <div class="position-relative z-index-1" style="max-width: 600px;">
+                <h1 class="display-5 mb-3 text-white" style="font-family: var(--font-head);">Sabor que nace en casa.</h1>
+                <p class="fs-6 fw-medium text-white opacity-90 mb-0" style="line-height: 1.6;">
+                    Directo del productor a tu mesa. Descubre la frescura real con precios que cuidan tu bolsillo.
+                </p>
+            </div>
+            <i class="bi bi-flower1 position-absolute text-white opacity-10" style="font-size: 15rem; bottom: -30px; right: -30px;"></i>
+        </div>
+    </div>
+</div>
+{% endif %}
 
-    .py-7 {
-        padding-top: 6rem;
-        padding-bottom: 6rem;
-    }
+<!-- CATEGORY PILLS -->
+<div class="d-flex gap-2 overflow-auto hide-scrollbar mb-5 pb-2 pop-in" style="animation-delay: 0.1s;">
+    <a href="/" class="btn-app {% if active_nav == 'catalog' and not selected_cat %}btn-primary-app{% else %}bg-white shadow-sm{% endif %} px-4 text-nowrap">
+        <i class="bi bi-shop me-2"></i> Todo el Mercado
+    </a>
+    {% for cat in categories %}
+    <a href="/?cat={{ cat.id }}" class="btn-app {% if selected_cat == cat.id %}btn-primary-app{% else %}bg-white shadow-sm{% endif %} px-4 text-nowrap">
+        {{ cat.name }}
+    </a>
+    {% endfor %}
+</div>
 
-    .tracking-wide {
-        letter-spacing: 1.5px;
-    }
+<!-- PRODUCTS GRID BENTO -->
+<div class="row g-4 mb-5">
+    {% for p in products %}
+    <div class="col-6 col-md-4 col-lg-3 pop-in" style="--delay: {{ forloop.counter0|add:2 }}00ms; animation-delay: var(--delay);">
+        <div class="bento bento-hover d-flex flex-column p-3 p-md-4">
+            
+            <div class="prod-img-box mb-3">
+                {% if p.is_on_offer %}
+                <span class="deal-tag position-absolute top-0 start-0 m-2 z-index-2" style="background: var(--brand-chilli);">OFERTA</span>
+                {% endif %}
+                
+                {% if p.image %}
+                <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                {% else %}
+                <i class="bi bi-image" style="font-size: 3rem; color: rgba(0,0,0,0.1);"></i>
+                {% endif %}
+            </div>
 
-    .shadow-hover:hover {
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12) !important;
-    }
+        <div class="flex-grow-1 d-flex flex-column">
+                <a href="#" class="text-decoration-none text-primary-emphasis mb-1">
+                    <h4 class="fs-5 fw-bold m-0 lh-sm" style="color: var(--text-main);">{{ p.name }}</h4>
+                </a>
+                <p class="text-secondary small fw-medium mb-1 lh-sm">{{ p.description|default:"Fresco y delicioso, seleccionado para ti."|truncatechars:45 }}</p>
+                <p class="text-muted x-small fw-bold uppercase letters-wide mb-3">{{ p.get_unit_display }}</p>
+                
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <div>
+                        {% if p.is_on_offer and p.offer_price %}
+                        <span class="fs-4 fw-bold text-danger">${{ p.offer_price }}</span>
+                        <span class="d-block text-muted text-decoration-line-through" style="font-size: 0.75rem; margin-top: -4px;">${{ p.price }}</span>
+                        {% else %}
+                        <span class="fs-4 fw-bold" style="color: var(--brand-farm);">${{ p.price }}</span>
+                        <span class="d-block text-muted" style="font-size: 0.7rem; font-weight: 700; margin-top: -4px;">PRECIO FINAL</span>
+                        {% endif %}
+                    </div>
+                    
+                    <a href="{{ p.wa_link }}" target="_blank" class="p-0 border-0 bg-transparent text-primary hover-accent text-decoration-none" style="transition: 0.3s;">
+                        <div class="logo-icon" style="width: 44px; height: 44px;">
+                            <i class="bi bi-whatsapp fs-5"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
 
-    .hover-scale:hover {
-        transform: scale(1.1);
-        background: #25D366;
-        color: white;
-        border-color: #25D366;
-    }
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 pop-in">
+        <div class="bento text-center py-5">
+            <i class="bi bi-emoji-frown text-secondary opacity-25 mb-3" style="font-size: 5rem;"></i>
+            <h2 class="fw-bold mb-2">¡Ups! Lista Vacía</h2>
+            <p class="text-secondary fw-medium fs-5">No encontramos productos en esta categoría por ahora.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
-    .float-animation {
-        animation: floating 4s ease-in-out infinite;
-    }
+<!-- BANNER BOTTOM BENTO -->
+<div class="bento pop-in p-5 overflow-hidden mb-5 d-flex flex-wrap align-items-center justify-content-between gap-4" style="background: var(--brand-light); border: 2px dashed var(--brand-lettuce);">
+    <div>
+        <h2 class="mb-2" style="color: var(--brand-farm);">¿Vendes al por mayor?</h2>
+        <p class="text-muted fw-bold mb-0">Tenemos planes especiales para restaurantes y negocios locales.</p>
+    </div>
+    <a href="https://wa.me/{{ WHATSAPP_NUMBER }}" target="_blank" class="btn-app btn-primary-app" style="background: var(--brand-pumpkin);">
+        Hablemos por WhatsApp <i class="bi bi-whatsapp"></i>
+    </a>
+</div>
 
-    @keyframes floating {
-        0% {
-            transform: translate(0, 0px);
-        }
-
-        50% {
-            transform: translate(0, -20px);
-        }
-
-        100% {
-            transform: translate(0, 0px);
-        }
-    }
-
-    .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-</style>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const md = document.getElementById('m_delivery');
-        const mp = document.getElementById('m_pickup');
-        const zw = document.getElementById('zone_wrap');
-        const aw = document.getElementById('addr_wrap');
-        if (md && mp && zw && aw) {
-            const sync = () => {
-                const show = md.checked;
-                zw.style.display = show ? '' : 'none';
-                aw.style.display = show ? '' : 'none';
-            };
-            md.addEventListener('change', sync);
-            mp.addEventListener('change', sync);
-        }
-    });
-</script>
 {% endblock %}

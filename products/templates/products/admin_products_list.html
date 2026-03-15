@@ -1,0 +1,99 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Inventario - MANJARES DEL CAMPO{% endblock %}
+{% block page_title %}Inventario de Productos{% endblock %}
+
+{% block content %}
+<div class="card p-4 rounded-4 shadow-sm border-0 animate-up">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-800 mb-0" style="font-family: var(--font-head);">Listado de Productos</h5>
+        <a href="{% url 'admin_product_create' %}" class="btn-lettuce rounded-pill px-4 fw-bold shadow-sm btn-animate">
+            <i class="bi bi-plus-lg me-2"></i>Nuevo Producto
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="bg-light text-muted small uppercase letters-wide">
+                <tr>
+                    <th class="border-0 py-3 ps-4">Producto</th>
+                    <th class="border-0 py-3">Categoría</th>
+                    <th class="border-0 py-3 text-center">Precio</th>
+                    <th class="border-0 py-3 text-center">Stock Actual</th>
+                    <th class="border-0 py-3 text-center">Estado</th>
+                    <th class="border-0 py-3 text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-3 overflow-hidden shadow-sm" style="width: 50px; height: 50px;">
+                                {% if p.image %}
+                                    <img src="{{ p.image.url }}" class="w-100 h-100 object-fit-cover">
+                                {% else %}
+                                    <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center text-muted">
+                                        <i class="bi bi-image small"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="fw-bold text-farm">{{ p.name }}</div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-cream text-farm rounded-pill px-3">{{ p.category.name|default:"Sin Categoría" }}</span></td>
+                    <td class="text-center fw-bold">
+                        {% if p.is_on_offer and p.offer_price %}
+                        <div class="text-danger">${{ p.offer_price }}</div>
+                        <div class="text-muted small text-decoration-line-through">${{ p.price }}</div>
+                        {% else %}
+                        ${{ p.price }}
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <form action="{% url 'admin_update_stock' p.id %}" method="POST" class="d-inline-flex gap-2 align-items-center">
+                            {% csrf_token %}
+                            <input type="number" name="stock" value="{{ p.stock }}" class="form-control form-control-sm text-center rounded-pill border-2 {% if p.low_stock %}border-danger text-danger{% else %}border-light{% endif %}" style="width: 70px; font-weight: 800;">
+                            <button type="submit" class="btn btn-sm btn-outline-farm rounded-circle p-1" style="width: 28px; height: 28px;">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </form>
+                        {% if p.low_stock %}
+                        <div class="small text-danger fw-bold mt-1"><i class="bi bi-exclamation-triangle-fill"></i> Stock Bajo</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if p.available %}
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Disponible</span>
+                        {% else %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Agotado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'admin_product_update' p.id %}" class="btn btn-sm btn-light rounded-circle p-2 text-farm" title="Editar Producto">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a href="{% url 'admin_product_delete' p.id %}" class="btn btn-sm btn-light rounded-circle p-2 text-chilli" title="Eliminar Producto">
+                                <i class="bi bi-trash3-fill"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .btn-outline-farm {
+        color: var(--farm-green);
+        border-color: var(--farm-green);
+    }
+    .btn-outline-farm:hover {
+        background: var(--farm-green);
+        color: white;
+    }
+</style>
+{% endblock %}

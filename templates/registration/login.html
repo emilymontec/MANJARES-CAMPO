@@ -1,85 +1,53 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Iniciar Sesión - CAMPOVERDE{% endblock %}
+{% block title %}Iniciar Sesión - MANJARES DEL CAMPO{% endblock %}
 
 {% block content %}
-<div class="container py-7 animate-up">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="glass-card p-5 rounded-5 border-2 shadow-lg">
-                <div class="text-center mb-5">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png" alt="Logo"
-                        class="rounded-circle mb-3"
-                        style="width: 80px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">
-                    <h2 class="fw-800 text-farm display-6 mb-1">Cosechemos juntos</h2>
-                    <p class="text-muted">Ingresa tus datos para continuar con tu pedido.</p>
-                </div>
-
-                <form method="post" action="{% url 'login' %}">
-                    {% csrf_token %}
-
-                    {% if form.errors %}
-                    <div class="alert alert-danger rounded-4 small border-0 py-3">
-                        <i class="bi bi-exclamation-circle-fill me-2"></i>
-                        Usuario o contraseña incorrectos. Intenta de nuevo.
-                    </div>
-                    {% endif %}
-
-                    <div class="mb-4">
-                        <label class="small fw-800 text-muted uppercase letters-wide mb-2 d-block">Usuario</label>
-                        <div class="search-bar p-1 ps-4 shadow-none bg-light border-0">
-                            <i class="bi bi-person text-muted"></i>
-                            {{ form.username }}
-                        </div>
-                    </div>
-
-                    <div class="mb-5">
-                        <div class="d-flex justify-content-between">
-                            <label
-                                class="small fw-800 text-muted uppercase letters-wide mb-2 d-block">Contraseña</label>
-                            <a href="#" class="x-small text-lettuce fw-bold text-decoration-none">¿Olvidaste tu
-                                contraseña?</a>
-                        </div>
-                        <div class="search-bar p-1 ps-4 shadow-none bg-light border-0">
-                            <i class="bi bi-lock text-muted"></i>
-                            {{ form.password }}
-                        </div>
-                    </div>
-
-                    <div class="d-grid mb-4">
-                        <button type="submit" class="btn-round btn-verde py-3 shadow-lg">
-                            <span class="fs-5">Ingresar al Huerto</span>
-                        </button>
-                    </div>
-
-                    <p class="text-center text-muted small mb-0">
-                        ¿Aún no eres parte de la huerta? <a href="#"
-                            class="text-lettuce fw-bold text-decoration-none">Regístrate ahora</a>
-                    </p>
-                </form>
-            </div>
+<div class="d-flex justify-content-center align-items-center pop-in" style="min-height: 70vh;">
+    <div class="bento p-4 p-md-5" style="width: 100%; max-width: 480px;">
+        
+        <div class="text-center mb-5">
+            <h2 class="mb-2" style="font-size: 2.4rem; color: var(--brand-farm); font-family: var(--font-head);">Cosecha Directa.</h2>
+            <p class="text-muted fw-bold m-0" style="font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-lettuce) !important;">INGRESA A TU CUENTA PARA COMPRAR</p>
         </div>
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="d-flex align-items-center gap-3 p-3 rounded-4 mb-4" style="background: rgba(191, 30, 45, 0.1); color: var(--brand-chilli);">
+                <i class="bi bi-exclamation-triangle-fill fs-4 m-0"></i>
+                <div class="m-0 fw-semibold lh-sm">Oops, usuario o contraseña incorrectos. ¡Intenta de nuevo!</div>
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary mb-2 ms-1">Tu usuario o correo</label>
+                <div class="position-relative">
+                    <i class="bi bi-person-fill position-absolute top-50 translate-middle-y ms-3 text-secondary fs-5"></i>
+                    <!-- Using manual inputs to maintain complete style control -->
+                    <input type="text" name="username" class="input-app" style="padding-left: 45px;" placeholder="ejemplo@correo.com" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2 ms-1">
+                    <label class="form-label fw-bold text-secondary m-0">Contraseña</label>
+                    <a href="#" class="fw-bold text-decoration-underline small" style="color: var(--brand-pumpkin);">Recuperar</a>
+                </div>
+                <div class="position-relative">
+                    <i class="bi bi-lock-fill position-absolute top-50 translate-middle-y ms-3 text-secondary fs-5"></i>
+                    <input type="password" name="password" class="input-app" style="padding-left: 45px;" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-app btn-primary-app w-100 py-3 fs-5 border-0 text-white mt-2">
+                Entrar a mi cuenta <i class="bi bi-arrow-right-short fs-4 ms-1 m-0"></i>
+            </button>
+
+
+        </form>
     </div>
 </div>
-
-<style>
-    .py-7 {
-        padding-top: 6rem;
-        padding-bottom: 6rem;
-    }
-
-    .glass-card {
-        background: rgba(255, 255, 255, 0.9);
-    }
-
-    form input {
-        border: none !important;
-        background: transparent !important;
-        width: 100% !important;
-        outline: none !important;
-        padding: 12px 10px !important;
-        font-weight: 600;
-        color: var(--text);
-    }
-</style>
 {% endblock %}

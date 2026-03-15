@@ -24,10 +24,10 @@ class LowStockFilter(admin.SimpleListFilter):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "category", "price", "stock", "min_stock", "low_stock_badge", "available")
+    list_display = ("name", "category", "price", "unit", "stock", "min_stock", "low_stock_badge", "available")
     list_filter = ("available", "category", LowStockFilter)
     search_fields = ("name", "category__name")
-    list_editable = ("price", "stock", "min_stock", "available")
+    list_editable = ("price", "unit", "stock", "min_stock", "available")
 
     def low_stock_badge(self, obj):
         if getattr(obj, "low_stock", False):

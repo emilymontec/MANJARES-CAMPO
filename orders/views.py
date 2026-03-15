@@ -4,93 +4,191 @@ from django.conf import settings
 from django.utils.http import urlencode
 from decimal import Decimal
 from products.models import Product
-from .models import ShippingZone
+from .models import ShippingZone, Order, OrderItem
 from django.http import HttpResponse
 from django.utils import timezone
+from django.contrib.auth.models import User
 from django.contrib.admin.views.decorators import staff_member_required
+from inventory.models import SiteConfiguration
+
+# --- FUNCIONES DE AYUDA ---
 
 def _get_cart(session):
+    """Retorna el diccionario del carrito de la sesión."""
     return session.setdefault("cart", {})
 
 def _save_session(request):
+    """Marca la sesión como modificada para persistir cambios."""
     request.session.modified = True
 
-def _cart_items(cart):
+def _calculate_cart_data(cart):
+    """Calcula items válidos y total del carrito."""
     items = []
     total = Decimal("0")
     for pid, qty in cart.items():
-        p = Product.objects.filter(id=int(pid), available=True).first()
-        if not p:
+        try:
+            product = Product.objects.filter(id=int(pid), available=True).first()
+            if product:
+                quantity = max(1, int(qty))
+                subtotal = Decimal(str(product.price)) * quantity
+                total += subtotal
+                items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'subtotal': subtotal
+                })
+        except (ValueError, TypeError):
             continue
-        quantity = int(qty)
-        subtotal = Decimal(p.price) * quantity
-        total += subtotal
-        items.append({"product": p, "quantity": quantity, "subtotal": subtotal})
     return items, total
 
-def _shipping_cost(total, shipping_opts=None):
-    free_threshold = getattr(settings, "FREE_SHIPPING_OVER", 100000)
-    default_shipping = getattr(settings, "DEFAULT_SHIPPING_COST", 10000)
-    shipping_opts = shipping_opts or {}
-    method = shipping_opts.get("method", "delivery")
-    if method == "pickup":
+def _get_shipping_cost(total_after_discount, shipping_opts):
+    """Calcula el costo de envío basado en reglas de negocio."""
+    method = shipping_opts.get('method', 'delivery')
+    if method == 'pickup':
         return Decimal("0")
-    zone_id = shipping_opts.get("zone_id")
+    
+    zone_id = shipping_opts.get('zone_id')
+    cost = Decimal(str(getattr(settings, "DEFAULT_SHIPPING_COST", 10000)))
+    
     if zone_id:
         try:
             zone = ShippingZone.objects.get(id=int(zone_id), active=True)
-            zone_cost = Decimal(zone.cost)
-        except (ShippingZone.DoesNotExist, ValueError):
-            zone_cost = Decimal(default_shipping)
-    else:
-        zone_cost = Decimal(default_shipping)
-    if total >= Decimal(free_threshold):
+            cost = Decimal(str(zone.cost))
+        except (ShippingZone.DoesNotExist, ValueError, TypeError):
+            pass
+            
+    # Umbral de envío gratis
+    threshold = Decimal(str(getattr(settings, "FREE_SHIPPING_OVER", 100000)))
+    if total_after_discount >= threshold:
         return Decimal("0")
-    return zone_cost
+        
+    return cost
 
-def _discount_amount(total):
-    percent = getattr(settings, "DISCOUNT_PERCENT", 0)
-    if not percent:
-        return Decimal("0")
-    return (Decimal(total) * Decimal(percent) / Decimal("100")).quantize(Decimal("1."))
+# --- VISTAS PÚBLICAS ---
 
 def cart_view(request):
+    """Vista principal del carrito con toda la lógica de cálculo y persistencia."""
     cart = _get_cart(request.session)
-    items, total = _cart_items(cart)
-    discount = _discount_amount(total)
-    shipping_opts = request.session.get("shipping", {"method": "delivery"})
-    shipping = _shipping_cost(total - discount, shipping_opts)
-    grand_total = total - discount + shipping
-    wa_number = getattr(settings, "WHATSAPP_NUMBER", "")
-    wa_text = "Pedido CAMPOVERDE:\n"
+    items, total = _calculate_cart_data(cart)
+    
+    # Descuento (opcional, configurable en settings)
+    discount_pct = Decimal(str(getattr(settings, "DISCOUNT_PERCENT", 0)))
+    discount = (total * (discount_pct / Decimal("100"))).quantize(Decimal("1."))
+    
+    # Configuración
+    shipping_opts = request.session.get("shipping", {"method": "delivery", "zone_id": None, "address": ""})
+    shipping_cost = _get_shipping_cost(total - discount, shipping_opts)
+    
+    grand_total = total - discount + shipping_cost
+    
+    # Persistencia del pedido para el Admin
+    order_id = None
+    if items:
+        # Manejo de usuario (Staff o Cliente Web)
+        if request.user.is_authenticated:
+            user = request.user
+        else:
+            user, _ = User.objects.get_or_create(username='cliente_web', defaults={'is_active': False})
+            
+        # Buscar orden activa en sesión
+        session_order_id = request.session.get('active_order_id')
+        order = None
+        if session_order_id:
+            order = Order.objects.filter(id=session_order_id, status='pending').first()
+            
+        if not order:
+            order = Order.objects.create(
+                customer=user,
+                status='pending',
+                total=grand_total,
+                delivery_method=shipping_opts.get('method', 'delivery'),
+                address=shipping_opts.get('address', '')
+            )
+            request.session['active_order_id'] = order.id
+        else:
+            order.total = grand_total
+            order.delivery_method = shipping_opts.get('method', 'delivery')
+            order.address = shipping_opts.get('address', '')
+            order.customer = user
+            order.save()
+            OrderItem.objects.filter(order=order).delete()
+            
+        for item in items:
+            OrderItem.objects.create(
+                order=order,
+                product=item['product'],
+                quantity=item['quantity'],
+                price=item['product'].price
+            )
+        order_id = order.id
+
+    # Configuración de WhatsApp
+    config = SiteConfiguration.objects.first()
+    wa_number = config.whatsapp_number if config else getattr(settings, "WHATSAPP_NUMBER", "")
+    wa_prefix = config.order_wa_prefix if config else "Hola!, quiero hacer este pedido"
+    
+    # Generar mensaje de WhatsApp
+    wa_msg = f"{wa_prefix}:\n\n"
     for i in items:
-        wa_text += f"- {i['quantity']} x {i['product'].name} = ${i['subtotal']}\n"
-    wa_text += f"Subtotal: ${total}\n"
-    if discount > 0:
-        wa_text += f"Descuento: -${discount}\n"
-    wa_text += f"Envío ({shipping_opts.get('method', 'delivery')}): ${shipping}\n"
-    wa_text += f"Total: ${grand_total}\n"
-    wa_link = f"https://wa.me/{wa_number}?{urlencode({'text': wa_text})}" if wa_number else ""
-    zones = ShippingZone.objects.filter(active=True).order_by("name")
+        wa_msg += f"- {i['quantity']} {i['product'].get_unit_display()} x {i['product'].name} = ${i['subtotal']}\n"
+    wa_msg += f"\nTotal: ${grand_total}\n"
+    
+    delivery_label = "Domicilio" if shipping_opts.get('method') == 'delivery' else "Recoger"
+    wa_msg += f"Entrega: {delivery_label}\n"
+    
+    if shipping_opts.get('method') == 'delivery':
+        zone_id = shipping_opts.get('zone_id')
+        if zone_id:
+            try:
+                zone = ShippingZone.objects.get(id=int(zone_id))
+                wa_msg += f"Zona: {zone.name} (+${zone.cost})\n"
+            except (ShippingZone.DoesNotExist, ValueError, TypeError):
+                pass
+        if shipping_opts.get('address'):
+            wa_msg += f"Dirección: {shipping_opts['address']}\n"
+    if order_id:
+        wa_msg += f"\n(Orden: #{order_id})"
+        
+    wa_link = f"https://wa.me/{wa_number}?{urlencode({'text': wa_msg})}" if wa_number else ""
+    
     ctx = {
         "items": items,
         "total": total,
         "discount": discount,
-        "shipping": shipping,
+        "shipping": shipping_cost,
         "grand_total": grand_total,
-        "wa_link": wa_link,
-        "zones": zones,
         "shipping_opts": shipping_opts,
+        "zones": ShippingZone.objects.filter(active=True),
+        "wa_link": wa_link,
     }
     return render(request, "orders/cart.html", ctx)
 
 @require_POST
 def add_to_cart(request, product_id):
-    qty = int(request.POST.get("qty", "1"))
     product = get_object_or_404(Product, id=product_id, available=True)
     cart = _get_cart(request.session)
-    current = int(cart.get(str(product_id), 0))
-    cart[str(product_id)] = current + max(1, qty)
+    try:
+        qty = int(request.POST.get("qty", 1))
+    except (ValueError, TypeError):
+        qty = 1
+    
+    str_id = str(product_id)
+    cart[str_id] = cart.get(str_id, 0) + max(1, qty)
+    _save_session(request)
+    return redirect("cart_view")
+
+@require_POST
+def update_cart_item(request, product_id):
+    cart = _get_cart(request.session)
+    str_id = str(product_id)
+    try:
+        qty = int(request.POST.get("qty", 1))
+        if qty > 0:
+            cart[str_id] = qty
+        else:
+            cart.pop(str_id, None)
+    except (ValueError, TypeError):
+        pass
     _save_session(request)
     return redirect("cart_view")
 
@@ -100,26 +198,78 @@ def remove_from_cart(request, product_id):
     _save_session(request)
     return redirect("cart_view")
 
-def quick_buy_product(request, product_id):
-    p = get_object_or_404(Product, id=product_id, available=True)
-    wa_number = getattr(settings, "WHATSAPP_NUMBER", "")
-    text = f"Hola, quiero comprar 1 x {p.name} por ${p.price}"
-    link = f"https://wa.me/{wa_number}?{urlencode({'text': text})}" if wa_number else "/"
-    return redirect(link)
-
 @require_POST
 def set_shipping_options(request):
     method = request.POST.get("method", "delivery")
     zone_id = request.POST.get("zone_id")
     address = request.POST.get("address", "")
-    request.session["shipping"] = {"method": method, "zone_id": zone_id, "address": address}
+    request.session["shipping"] = {
+        "method": method, 
+        "zone_id": zone_id, 
+        "address": address
+    }
     _save_session(request)
     return redirect("cart_view")
 
+@staff_member_required(login_url='login')
+def admin_shipping_zones(request):
+    zones = ShippingZone.objects.all()
+    if request.method == "POST":
+        name = request.POST.get("name")
+        cost = request.POST.get("cost", 0)
+        notes = request.POST.get("notes", "")
+        if name:
+            ShippingZone.objects.create(name=name, cost=cost, notes=notes)
+            return redirect("admin_shipping_zones")
+            
+    return render(request, "orders/admin_shipping_zones.html", {"zones": zones})
 
-@staff_member_required
+@staff_member_required(login_url='login')
+def admin_delete_zone(request, zone_id):
+    zone = get_object_or_404(ShippingZone, id=zone_id)
+    zone.delete()
+    return redirect("admin_shipping_zones")
+
+@staff_member_required(login_url='login')
+def admin_toggle_zone(request, zone_id):
+    zone = get_object_or_404(ShippingZone, id=zone_id)
+    zone.active = not zone.active
+    zone.save()
+    return redirect("admin_shipping_zones")
+
+def quick_buy_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, available=True)
+    config = SiteConfiguration.objects.first()
+    wa_number = config.whatsapp_number if config else ""
+    text = f"Hola, quiero comprar 1 x {product.name} por ${product.price}"
+    link = f"https://wa.me/{wa_number}?{urlencode({'text': text})}" if wa_number else "/"
+    return redirect(link)
+
+# --- VISTAS ADMINISTRATIVAS ---
+
+@staff_member_required(login_url='login')
+def admin_orders_list(request):
+    orders = Order.objects.all().order_by('-created_at')
+    return render(request, 'orders/admin_orders_list.html', {'orders': orders})
+
+@staff_member_required(login_url='login')
+def admin_order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    items = OrderItem.objects.filter(order=order)
+    return render(request, 'orders/admin_order_detail.html', {'order': order, 'items': items})
+
+@staff_member_required(login_url='login')
+@require_POST
+def admin_update_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    status = request.POST.get('status')
+    if status in dict(Order.STATUS_CHOICES):
+        order.status = status
+        order.save()
+    return redirect('admin_order_detail', order_id=order.id)
+
+@staff_member_required(login_url='login')
 def order_invoice_pdf(request, order_id):
-    from .models import Order, OrderItem
     order = get_object_or_404(Order, pk=order_id)
     items = OrderItem.objects.filter(order=order).select_related("product")
     try:
@@ -127,12 +277,10 @@ def order_invoice_pdf(request, order_id):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", "B", 14)
-        pdf.cell(0, 10, f"Factura CAMPOVERDE - Pedido #{order.id}", ln=True)
+        pdf.cell(0, 10, f"Factura MANJARES DEL CAMPO - Pedido #{order.id}", ln=True)
         pdf.set_font("Arial", "", 11)
         pdf.cell(0, 8, f"Fecha: {order.created_at.strftime('%Y-%m-%d %H:%M')}", ln=True)
-        pdf.cell(0, 8, f"Cliente: {order.customer.get_username()}", ln=True)
-        if order.customer_phone:
-            pdf.cell(0, 8, f"Teléfono: {order.customer_phone}", ln=True)
+        pdf.cell(0, 8, f"Cliente: {order.customer.username}", ln=True)
         if order.address:
             pdf.multi_cell(0, 8, f"Dirección: {order.address}")
         pdf.ln(2)
@@ -141,17 +289,15 @@ def order_invoice_pdf(request, order_id):
         pdf.cell(30, 8, "Cantidad", 1, align="R")
         pdf.cell(60, 8, "Subtotal", 1, ln=True, align="R")
         pdf.set_font("Arial", "", 11)
-        total = Decimal("0")
         for it in items:
-            subtotal = Decimal(it.quantity) * Decimal(it.price)
-            total += subtotal
+            subtotal = it.quantity * it.price
             pdf.cell(100, 8, it.product.name, 1)
             pdf.cell(30, 8, str(it.quantity), 1, align="R")
             pdf.cell(60, 8, f"${subtotal}", 1, ln=True, align="R")
         pdf.ln(2)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(130, 8, "Total", 1)
-        pdf.cell(60, 8, f"${total}", 1, ln=True, align="R")
+        pdf.cell(60, 8, f"${order.total}", 1, ln=True, align="R")
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = f'inline; filename="factura_{order.id}.pdf"'
         response.write(pdf.output(dest='S').encode('latin-1'))
@@ -159,40 +305,42 @@ def order_invoice_pdf(request, order_id):
     except Exception:
         return render(request, "orders/invoice_fallback.html", {"order": order, "items": items})
 
-
 @staff_member_required
-def monthly_sales_pdf(request):
-    from .models import Order, OrderItem
+def admin_orders_reports_monthly(request):
+    from django.db.models import Sum
     now = timezone.now()
     month_orders = Order.objects.filter(created_at__year=now.year, created_at__month=now.month)
-    total = sum((o.total for o in month_orders), Decimal("0"))
+    total_sales = month_orders.aggregate(total=Sum('total'))['total'] or Decimal("0")
+    
+    top_products = (
+        OrderItem.objects.filter(order__created_at__year=now.year, order__created_at__month=now.month)
+        .values("product__name")
+        .annotate(qty=Sum("quantity"))
+        .order_by("-qty")[:10]
+    )
+
     try:
         from fpdf import FPDF
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(0, 10, f"Reporte Mensual de Ventas - {now.strftime('%B %Y')}", ln=True, align='C')
-        pdf.ln(4)
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, f"REPORTE MENSUAL - {now.strftime('%B %Y').upper()}", ln=True, align='C')
+        pdf.ln(10)
+        
         pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "ID", 1)
-        pdf.cell(80, 8, "Cliente", 1)
-        pdf.cell(40, 8, "Fecha", 1)
-        pdf.cell(40, 8, "Total", 1, ln=True, align="R")
+        pdf.cell(160, 10, "TOTAL VENTAS DEL MES", 0)
+        pdf.cell(30, 10, f"${total_sales}", 0, ln=True, align="R")
+        
+        pdf.ln(10)
+        pdf.cell(0, 10, "PRODUCTOS MÁS VENDIDOS", ln=True)
         pdf.set_font("Arial", "", 11)
-        for o in month_orders:
-            pdf.cell(30, 8, str(o.id), 1)
-            pdf.cell(80, 8, o.customer.get_username(), 1)
-            pdf.cell(40, 8, o.created_at.strftime("%d/%m/%Y"), 1)
-            pdf.cell(40, 8, f"${o.total}", 1, ln=True, align="R")
-        pdf.ln(4)
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(150, 8, "TOTAL MES", 0)
-        pdf.cell(40, 8, f"${total}", 0, ln=True, align="R")
+        for p in top_products:
+            pdf.cell(130, 8, p["product__name"], 1)
+            pdf.cell(60, 8, str(p["qty"]), 1, ln=True, align="C")
+
         response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = f'inline; filename="reporte_{now.strftime("%m_%Y")}.pdf"'
+        response["Content-Disposition"] = f'attachment; filename="Reporte_{now.strftime("%m_%Y")}.pdf"'
         response.write(pdf.output(dest='S').encode('latin-1'))
         return response
     except Exception:
-        return render(request, "orders/report_fallback.html", {"orders": month_orders, "total": total, "now": now})
-
-# Create your views here.
+        return render(request, "orders/report_fallback.html", {"orders": month_orders, "total": total_sales, "now": now})

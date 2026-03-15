@@ -1,229 +1,163 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Carrito - CAMPOVERDE{% endblock %}
+{% block title %}Mi Carrito - MANJARES DEL CAMPO{% endblock %}
 
 {% block content %}
-<div class="container py-5 animate-up">
-    <div class="mb-5 border-start border-5 border-lettuce ps-4">
-        <h1 class="fw-800 display-4" style="color: var(--farm-green);">Tu Cesta Cosechada</h1>
-        <p class="text-muted fs-5 mb-0">Revisa tus tesoros de la tierra antes de finalizar.</p>
+<div class="pop-in pb-5">
+    
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{% url 'catalog' %}" class="btn-app btn-light-app px-3"><i class="bi bi-arrow-left"></i> Volver</a>
+        <h1 class="m-0 fs-2 fw-bold">Tu Canasta <i class="bi bi-basket-fill ms-2"></i></h1>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="product-card p-0 overflow-hidden text-start border-2 shadow-sm"
-                style="border-radius: var(--radius-lg); background: var(--white);">
-                <div class="table-responsive">
-                    <table class="table mb-0 align-middle">
-                        <thead style="background: var(--light-cream);">
-                            <tr>
-                                <th class="ps-4 py-4 border-0 text-farm fw-800 uppercase small"
-                                    style="letter-spacing: 1px;">Producto</th>
-                                <th class="text-center py-4 border-0 text-farm fw-800 uppercase small"
-                                    style="letter-spacing: 1px;">Cant.</th>
-                                <th class="text-end py-4 border-0 text-farm fw-800 uppercase small"
-                                    style="letter-spacing: 1px;">Subtotal</th>
-                                <th class="pe-4 py-4 border-0"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for i in items %}
-                            <tr class="border-bottom border-light">
-                                <td class="ps-4 py-4">
-                                    <div class="d-flex align-items-center">
-                                        {% if i.product.image %}
-                                        <div class="p-1 bg-light rounded-4 me-3 shadow-sm border">
-                                            <img src="{{ i.product.image }}" class="rounded-4"
-                                                style="width: 75px; height: 75px; object-fit: cover;">
-                                        </div>
-                                        {% else %}
-                                        <div class="bg-light rounded-4 me-3 d-flex align-items-center justify-content-center border"
-                                            style="width: 75px; height: 75px;">
-                                            <i class="bi bi-flower1 text-muted fs-3"></i>
-                                        </div>
-                                        {% endif %}
-                                        <div>
-                                            <h6 class="mb-1 fw-800 text-dark fs-5">{{ i.product.name }}</h6>
-                                            <span
-                                                class="badge rounded-pill bg-cream text-lettuce fw-bold px-3">Orgánico</span>
-                                            <span class="text-muted small d-block mt-1">${{ i.product.price }}
-                                                c/u</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center py-4">
-                                    <div class="d-inline-flex align-items-center bg-light rounded-pill p-1 border">
-                                        <span class="fw-800 px-3 py-1">{{ i.quantity }}</span>
-                                    </div>
-                                </td>
-                                <td class="text-end py-4 fw-800 fs-5" style="color: var(--farm-green);">
-                                    ${{ i.subtotal }}
-                                </td>
-                                <td class="pe-4 py-4 text-end">
-                                    <a href="{% url 'remove_from_cart' i.product.id %}"
-                                        class="btn btn-link text-chilli p-2 hover-chilli"
-                                        title="Eliminar este producto">
-                                        <i class="bi bi-trash3-fill fs-5"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-5">
-                                    <div class="py-5 animate-up">
-                                        <i class="bi bi-cart-x text-muted opacity-25" style="font-size: 7rem;"></i>
-                                        <h3 class="mt-4 fw-800 text-farm">¡Tu cesta parece un desierto!</h3>
-                                        <p class="text-muted mb-4">Aún no has añadido ninguna delicia natural.</p>
-                                        <a href="{% url 'catalog' %}"
-                                            class="btn-round btn-verde mt-2 text-decoration-none shadow-lg px-5">Regresar
-                                            al Huerto</a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- LISTA DE BENTOS -->
+        <div class="col-lg-7">
+            
+            {% for item in items %}
+            <div class="bento d-flex align-items-center gap-4 mb-3 p-3 p-md-4">
+                <div class="prod-img-box m-0" style="width: 100px; height: 100px; flex-shrink: 0; background: var(--brand-light);">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" class="w-75 h-75 object-fit-contain mix-blend-multiply">
+                    {% else %}
+                    <i class="bi bi-image opacity-25 fs-1 text-secondary"></i>
+                    {% endif %}
                 </div>
-            </div>
-
-            <div class="mt-4 d-flex align-items-center gap-2 text-muted small">
-                <i class="bi bi-shield-check-fill text-lettuce fs-4"></i>
-                <span>Tus datos y pedido están protegidos. Frescura garantizada o devolución total.</span>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="product-card p-4 border-2 shadow-lg sticky-top"
-                style="border-radius: var(--radius-lg); background: var(--white); top: 120px; z-index: 10;">
-                <h4 class="fw-800 mb-4 pb-2 border-bottom" style="color: var(--farm-green);">Detalle de Cosecha</h4>
-
-                <div class="d-flex justify-content-between mb-3 align-items-center">
-                    <span class="text-muted fw-bold">Subtotal fresco</span>
-                    <span class="fw-800 text-dark fs-5">${{ total }}</span>
+                
+                <div class="flex-grow-1">
+                    <h4 class="fs-5 fw-bold mb-1" style="font-family: var(--font-head);">{{ item.product.name }}</h4>
+                    <p class="text-secondary fw-semibold m-0">${{ item.product.price }} c/u</p>
                 </div>
 
-                {% if discount %}
-                <div class="d-flex justify-content-between mb-3 text-success align-items-center">
-                    <span class="small fw-bold">Descuento Semilla</span>
-                    <span class="fw-800">- ${{ discount }}</span>
-                </div>
-                {% endif %}
-
-                <div class="d-flex justify-content-between mb-3 text-dark align-items-center">
-                    <span class="text-muted fw-bold">Transporte Ecológico</span>
-                    <span class="fw-800">
-                        {% if shipping == 0 %}
-                        <span class="badge bg-cream text-lettuce fw-800 px-3 border border-success">¡GRATIS!</span>
-                        {% else %}
-                        <span class="text-farm">${{ shipping }}</span>
-                        {% endif %}
-                    </span>
-                </div>
-
-                <div class="bg-light rounded-4 p-3 my-4 border border-dashed text-center">
-                    <form action="{% url 'set_shipping_options' %}" method="post" class="text-start">
+                <div class="text-center">
+                    <form action="{% url 'update_cart_item' item.product.id %}" method="POST" class="d-flex align-items-center bg-light border-0 px-2 py-1 rounded-pill mb-2 shadow-sm" style="background: var(--brand-light) !important;">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="small fw-bold text-muted d-block mb-2">Modalidad de entrega</label>
-                            <div class="d-flex gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="method" id="m_delivery"
-                                        value="delivery" {% if shipping_opts.method !='pickup' %}checked{% endif %}>
-                                    <label class="form-check-label small" for="m_delivery">Domicilio</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="method" id="m_pickup"
-                                        value="pickup" {% if shipping_opts.method=='pickup' %}checked{% endif %}>
-                                    <label class="form-check-label small" for="m_pickup">Recoger en punto</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="zone_wrap" class="mb-3" {% if shipping_opts.method=='pickup' %}style="display:none" {%
-                            endif %}>
-                            <label class="small fw-bold text-muted d-block mb-2">Zona (Área Metropolitana del
-                                Atlántico)</label>
-                            <select class="form-select" name="zone_id">
-                                <option value="">Tarifa estándar</option>
-                                {% for z in zones %}
-                                <option value="{{ z.id }}" {% if shipping_opts.zone_id|default:''==z.id|stringformat:'s'
-                                    %}selected{% endif %}>{{ z.name }} - ${{ z.cost }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div id="addr_wrap" class="mb-3" {% if shipping_opts.method=='pickup' %}style="display:none" {%
-                            endif %}>
-                            <label class="small fw-bold text-muted d-block mb-2">Dirección (si es domicilio)</label>
-                            <input class="form-control" type="text" name="address"
-                                value="{{ shipping_opts.address|default:'' }}" placeholder="Barrio, calle, referencia">
-                        </div>
-                        <div class="d-grid">
-                            <button class="btn-round py-2 bg-cream fw-800"
-                                style="color: var(--farm-green); border: 2px solid var(--farm-green);">Actualizar
-                                envío</button>
-                        </div>
+                        <input type="number" name="qty" value="{{ item.quantity }}" min="1"
+                            class="border-0 bg-transparent text-center fw-bold"
+                            style="width: 50px; outline: none; color: var(--brand-farm); font-family: var(--font-app);" onchange="this.form.submit()">
                     </form>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4 pt-2 border-top">
-                    <span class="h5 mb-0 fw-800 text-dark">Total Final</span>
-                    <span class="h2 mb-0 fw-800" style="color: var(--farm-green);">${{ grand_total }}</span>
+                <div class="text-end" style="min-width: 90px;">
+                    <h4 class="fw-black mb-1" style="color: var(--brand-lettuce); font-family: var(--font-app);">${{ item.subtotal }}</h4>
+                    <a href="{% url 'remove_from_cart' item.product.id %}" class="text-muted small fw-bold text-decoration-none" style="color: var(--brand-pumpkin) !important;">Eliminar</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="bento text-center py-5">
+                <i class="bi bi-basket2-fill text-secondary opacity-25 mb-4 d-block" style="font-size: 5rem;"></i>
+                <h3 class="fw-bold mb-3">La canasta está vacía</h3>
+                <p class="text-secondary fw-medium mb-4">Agregue algunos productos frescos para empezar.</p>
+                <a href="{% url 'catalog' %}" class="btn-app btn-primary-app">Ir de Compras <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- RESUMEN BENTO -->
+        <div class="col-lg-5">
+            <div class="bento p-4 p-md-5 sticky-top" style="top: 100px;">
+                <h3 class="fw-bold mb-4 d-flex align-items-center gap-2"><i class="bi bi-receipt"></i> Resumen</h3>
+
+                <div class="d-flex justify-content-between mb-3 fw-medium">
+                    <span class="text-secondary">Subtotal</span>
+                    <span>${{ total }}</span>
                 </div>
 
-                {% if wa_link %}
-                <a href="{{ wa_link }}" target="_blank"
-                    class="btn-round w-100 py-3 mb-3 d-flex align-items-center justify-content-center gap-3 shadow-lg"
-                    style="background: linear-gradient(135deg, var(--farm-green) 0%, #154632 100%); color: white;">
-                    <i class="bi bi-whatsapp fs-4"></i>
-                    <span class="fw-800 fs-5">Finalizar en WhatsApp</span>
-                </a>
-                <p class="text-center text-muted small px-3 mb-4">
-                    Al dar clic se abrirá un chat directo para coordinar tu entrega personalizada.
-                </p>
-                {% else %}
-                <div class="alert alert-warning border-0 rounded-4 small">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Falta configurar el número de contacto.
+                {% if discount > 0 %}
+                <div class="d-flex justify-content-between mb-3 fw-bold" style="color: var(--brand-lettuce);">
+                    <span>Descuento Aplicado</span>
+                    <span>-${{ discount }}</span>
                 </div>
                 {% endif %}
 
-                <a href="{% url 'catalog' %}" class="btn-round w-100 py-3 text-center transition-all bg-cream fw-800"
-                    style="color: var(--farm-green); border: 2px solid var(--farm-green);">
-                    Continuar Cosechando
+                <div class="d-flex justify-content-between mb-4 pb-4 border-bottom border-dark border-opacity-10 fw-medium">
+                    <span class="text-secondary">Envío</span>
+                    {% if shipping == 0 %}
+                    <span class="badge rounded-pill d-flex align-items-center px-2" style="background: var(--brand-light); color: var(--brand-farm);">¡Gratis!</span>
+                    {% else %}
+                    <span>${{ shipping }}</span>
+                    {% endif %}
+                </div>
+
+                <form action="{% url 'set_shipping_options' %}" method="POST" class="mb-4">
+                    {% csrf_token %}
+                    
+                    <div class="d-flex p-1 rounded-pill mb-4" style="background: var(--brand-light);">
+                        <input type="radio" name="method" id="m_delivery" value="delivery" {% if shipping_opts.method == 'delivery' %}checked{% endif %} class="btn-check">
+                        <label for="m_delivery" class="btn flex-grow-1 rounded-pill fw-bold text-secondary border-0" style="transition:0.3s;"><i class="bi bi-truck me-2"></i> Domicilio</label>
+                        
+                        <input type="radio" name="method" id="m_pickup" value="pickup" {% if shipping_opts.method == 'pickup' %}checked{% endif %} class="btn-check">
+                        <label for="m_pickup" class="btn flex-grow-1 rounded-pill fw-bold text-secondary border-0" style="transition:0.3s;"><i class="bi bi-geo-alt me-2"></i> Recoger</label>
+                    </div>
+
+                    <div id="shipping_fields" class="bento p-3 bg-white" style="border: 1px solid var(--brand-light); {% if shipping_opts.method == 'pickup' %}display:none;{% endif %}">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary fw-semibold small">Zona de Entrega</label>
+                            <select class="input-app py-2" name="zone_id" style="border-radius: 12px; background: var(--brand-light) !important;">
+                                <option value="">Selecciona zona...</option>
+                                {% for z in zones %}
+                                <option value="{{ z.id }}" style="color: black;" {% if shipping_opts.zone_id == z.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ z.name }} (+${{ z.cost }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label text-secondary fw-semibold small">Dirección Exacta</label>
+                            <input class="input-app py-2" style="border-radius: 12px; background: var(--brand-light) !important;" type="text" name="address" value="{{ shipping_opts.address }}" placeholder="Ej: Calle 123 #45-67">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-app btn-tint-app w-100 mt-3 d-none" id="btn-update-ship">Actualizar Envío</button>
+                    <!-- Small hack: we autosubmit form on change of fields -->
+                </form>
+
+                <div class="d-flex justify-content-between align-items-center bg-white p-4 mb-4 rounded-4" style="border: 1px solid var(--brand-light);">
+                    <span class="fs-6 fw-bold text-muted">Total Final</span>
+                    <span class="fs-2 fw-black" style="color: var(--brand-lettuce); font-family: var(--font-app);">${{ grand_total }}</span>
+                </div>
+
+                {% if wa_link %}
+                <a href="{{ wa_link }}" target="_blank" class="btn-app btn-primary-app w-100 py-3 d-flex justify-content-center text-white" style="background: #25D366; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);">
+                    <i class="bi bi-whatsapp me-2 fs-5"></i> Pedir por WhatsApp
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .hover-chilli:hover {
-        color: var(--chilli) !important;
-        transform: scale(1.2);
-    }
-
-    .uppercase {
-        text-transform: uppercase;
-    }
+    /* Radio Pill styles */
+    .btn-check:checked + label { background: var(--brand-lettuce) !important; color: white !important; box-shadow: 0 4px 15px rgba(61, 176, 67, 0.2); }
 </style>
 
-{% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function () {
         const md = document.getElementById('m_delivery');
         const mp = document.getElementById('m_pickup');
-        const zw = document.getElementById('zone_wrap');
-        const aw = document.getElementById('addr_wrap');
-        if (md && mp && zw && aw) {
-            const sync = () => {
-                const show = md.checked;
-                zw.style.display = show ? '' : 'none';
-                aw.style.display = show ? '' : 'none';
+        const fields = document.getElementById('shipping_fields');
+        const form = md.closest('form');
+        const updateBtn = document.getElementById('btn-update-ship');
+
+        if (md && mp && fields) {
+            const toggle = () => { 
+                fields.style.display = md.checked ? 'block' : 'none'; 
+                form.submit(); // Auto submit when changing method
             };
-            md.addEventListener('change', sync);
-            mp.addEventListener('change', sync);
+            md.addEventListener('change', toggle);
+            mp.addEventListener('change', toggle);
         }
+
+        // Show update button only if address/zone changed manually
+        const inputs = fields.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                updateBtn.classList.remove('d-none');
+            });
+        });
     });
 </script>
-{% endblock %}
 {% endblock %}

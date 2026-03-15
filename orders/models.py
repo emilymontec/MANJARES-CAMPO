@@ -22,7 +22,7 @@ class ShippingZone(models.Model):
 class Order(models.Model):
 
     STATUS_CHOICES = [
-        ('pending', 'Pendiente'),
+        ('pending', 'Nuevo pedido'),
         ('confirmed', 'Confirmado'),
         ('preparing', 'En preparación'),
         ('sent', 'Enviado'),

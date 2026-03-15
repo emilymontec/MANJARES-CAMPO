@@ -1,0 +1,87 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Gestión de Pedidos - MANJARES DEL CAMPO{% endblock %}
+{% block page_title %}Pedidos de la Huerta{% endblock %}
+
+{% block content %}
+<div class="card p-4 rounded-4 shadow-sm border-0 animate-up">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-800 mb-0" style="font-family: var(--font-head);">Listado de Pedidos</h5>
+        <div class="d-flex gap-2">
+            <span class="badge bg-lettuce rounded-pill px-3" style="background: var(--brand-lettuce) !important;">{{ orders|length }} pedidos en total</span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="bg-light text-muted small uppercase letters-wide">
+                <tr>
+                    <th class="border-0 py-3 ps-4">ID</th>
+                    <th class="border-0 py-3">Cliente</th>
+                    <th class="border-0 py-3">WhatsApp</th>
+                    <th class="border-0 py-3">Fecha</th>
+                    <th class="border-0 py-3">Total</th>
+                    <th class="border-0 py-3">Estado</th>
+                    <th class="border-0 py-3 text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in orders %}
+                <tr>
+                    <td class="ps-4 fw-bold">#{{ o.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-cream rounded-circle p-2 text-farm">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <span>{{ o.customer.get_full_name|default:o.customer.username }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="https://wa.me/{{ o.customer_phone }}" target="_blank" class="text-decoration-none text-success fw-bold">
+                            <i class="bi bi-whatsapp me-1"></i> {{ o.customer_phone|default:"Sin número" }}
+                        </a>
+                    </td>
+                    <td class="text-muted small">{{ o.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="fw-bold text-farm">${{ o.total }}</td>
+                    <td>
+                        <span class="badge rounded-pill px-3 
+                            {% if o.status == 'pending' %}bg-warning text-dark
+                            {% elif o.status == 'confirmed' %}bg-info text-white
+                            {% elif o.status == 'preparing' %}bg-primary
+                            {% elif o.status == 'sent' %}bg-lettuce
+                            {% elif o.status == 'delivered' %}bg-dark
+                            {% endif %}">
+                            {{ o.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <a href="{% url 'admin_order_detail' o.id %}" class="btn btn-sm btn-outline-farm rounded-pill px-3">
+                            Ver Detalle
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
+                        No hay pedidos registrados aún.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .btn-outline-farm {
+        color: var(--farm-green);
+        border-color: var(--farm-green);
+    }
+    .btn-outline-farm:hover {
+        background: var(--farm-green);
+        color: white;
+    }
+</style>
+{% endblock %}

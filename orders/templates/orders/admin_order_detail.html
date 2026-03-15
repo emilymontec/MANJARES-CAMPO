@@ -1,0 +1,127 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Detalle del Pedido #{{ order.id }} - MANJARES DEL CAMPO{% endblock %}
+{% block page_title %}Detalle del Pedido #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="row g-4 animate-up">
+    <!-- Main Detail Section -->
+    <div class="col-lg-8">
+        <div class="card p-5 rounded-4 shadow-sm border-0 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h5 class="fw-800 mb-0" style="font-family: var(--font-head);"><i class="bi bi-box-seam me-2 text-lettuce"></i>Resumen de Cosecha</h5>
+                <span class="badge rounded-pill px-4 py-2 fw-bold" style="background: var(--brand-light); color: var(--brand-farm);">{{ items|length }} productos</span>
+            </div>
+
+            <div class="table-responsive mb-4">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light text-muted small uppercase letters-wide">
+                        <tr>
+                            <th class="border-0 py-3 ps-4">Producto</th>
+                            <th class="border-0 py-3 text-center">Cantidad</th>
+                            <th class="border-0 py-3 text-end">Precio Unit.</th>
+                            <th class="border-0 py-3 text-end pe-4">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for it in items %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if it.product.image %}
+                                    <img src="{{ it.product.image.url }}" class="rounded-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold text-farm">{{ it.product.name }}</div>
+                                        <div class="text-muted small">{{ it.product.get_unit_display }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center fw-bold">{{ it.quantity }}</td>
+                            <td class="text-end text-muted">${{ it.price }}</td>
+                            <td class="text-end fw-bold text-farm pe-4">${{ it.subtotal }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="border-top-0">
+                        <tr>
+                            <td colspan="3" class="text-end pt-4 fw-800 text-muted">TOTAL DEL PEDIDO:</td>
+                            <td class="text-end pt-4 pe-4 fw-800 text-farm fs-4">${{ order.total }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="bg-cream p-4 rounded-4 border-start border-5 border-lettuce">
+                <div class="fw-800 text-farm mb-2"><i class="bi bi-geo-alt-fill me-2"></i>Información de Entrega</div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small fw-bold uppercase letters-wide mb-1">Método de Entrega</div>
+                        <div class="fw-bold">{{ order.get_delivery_method_display }}</div>
+                    </div>
+                    {% if order.address %}
+                    <div class="text-end">
+                        <div class="text-muted small fw-bold uppercase letters-wide mb-1">Dirección de Envío</div>
+                        <div class="fw-bold">{{ order.address }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Section: Status and Customer -->
+    <div class="col-lg-4">
+        <div class="card p-5 rounded-4 shadow-sm border-0 mb-4 h-100">
+            <h5 class="fw-800 mb-4 border-bottom pb-3" style="font-family: var(--font-head);"><i class="bi bi-person-badge me-2 text-farm"></i>Cliente de la Huerta</h5>
+            <div class="text-center mb-4">
+                <div class="rounded-circle p-4 d-inline-block mb-3" style="background: var(--brand-light);">
+                    <i class="bi bi-person-fill text-muted display-4"></i>
+                </div>
+                <h5 class="fw-800 mb-1 text-farm" style="font-family: var(--font-head);">{{ order.customer.get_full_name|default:order.customer.username }}</h5>
+                <p class="text-muted small mb-3">@{{ order.customer.username }}</p>
+                <a href="https://wa.me/{{ order.customer_phone }}" target="_blank" class="btn btn-outline-success rounded-pill px-4 shadow-sm w-100 fw-bold" style="border-color: var(--brand-lettuce); color: var(--brand-lettuce);">
+                    <i class="bi bi-whatsapp me-2"></i>Enviar Mensaje
+                </a>
+            </div>
+
+            <hr class="my-4 opacity-10">
+
+            <h5 class="fw-800 mb-4 border-bottom pb-3" style="font-family: var(--font-head);"><i class="bi bi-gear-fill me-2 text-warning"></i>Estado del Pedido</h5>
+            <form action="{% url 'admin_update_order_status' order.id %}" method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <select name="status" class="form-select rounded-pill px-4 border-2 shadow-sm fw-bold" style="border-color: var(--brand-light) !important;">
+                        {% for code, label in order.STATUS_CHOICES %}
+                        <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-lettuce rounded-pill w-100 shadow-sm fw-bold py-2">
+                    Actualizar Estado
+                </button>
+            </form>
+
+            <div class="mt-4">
+                <a href="{% url 'order_invoice_pdf' order.id %}" class="btn btn-outline-farm rounded-pill w-100 fw-bold py-2 mb-2">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>Generar Factura
+                </a>
+                <a href="{% url 'admin_orders_list' %}" class="btn btn-link w-100 text-decoration-none text-muted small fw-bold">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Listado
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-outline-farm {
+        color: var(--farm-green);
+        border-color: var(--farm-green);
+    }
+    .btn-outline-farm:hover {
+        background: var(--farm-green);
+        color: white;
+    }
+</style>
+{% endblock %}

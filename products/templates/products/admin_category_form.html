@@ -1,0 +1,65 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ title }} - MANJARES DEL CAMPO{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pb-5">
+    <div class="col-lg-8 col-xl-6">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a href="{% url 'admin_category_list' %}" class="btn-app bg-white shadow-sm px-3 py-2 text-decoration-none text-farm">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <h2 class="fw-800 m-0 text-farm">{{ title }}</h2>
+        </div>
+
+        <div class="card p-5 rounded-4 shadow-sm border-0 animate-up">
+            <h4 class="fw-800 text-farm mb-4 pb-2 border-bottom d-flex align-items-center gap-3">
+                <i class="bi bi-tags-fill text-lettuce"></i>
+                {% if category %}Editar: {{ category.name }}{% else %}Nueva Categoría{% endif %}
+            </h4>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-4">
+                    {% for field in form %}
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-farm small uppercase letters-wide">{{ field.label }}</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border-2" style="border-color: var(--brand-light) !important;">
+                            <span class="input-group-text bg-light border-0">
+                                {% if field.name == 'name' %}<i class="bi bi-tag-fill text-lettuce"></i>
+                                {% elif field.name == 'icon' %}<i class="bi bi-image-fill text-lettuce"></i>
+                                {% else %}<i class="bi bi-input-cursor-text text-lettuce"></i>
+                                {% endif %}
+                            </span>
+                            {{ field }}
+                        </div>
+                        {% if field.help_text %}
+                        <div class="form-text x-small mt-1 text-muted ps-3">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1 fw-bold ps-3">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="col-12 pt-3">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <a href="{% url 'admin_category_list' %}" class="btn btn-light rounded-pill w-100 py-3 fw-bold text-muted btn-animate">
+                                    Cancelar
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="btn-lettuce w-100 rounded-pill py-3 fw-bold shadow-lg btn-animate fs-5">
+                                    <i class="bi bi-check-lg me-2"></i>Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

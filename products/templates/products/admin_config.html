@@ -1,0 +1,72 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Configuración - MANJARES DEL CAMPO{% endblock %}
+{% block page_title %}Configuración de la Tienda{% endblock %}
+
+{% block content %}
+<div class="row g-4 animate-up">
+    <div class="col-lg-8 mx-auto">
+        <div class="card p-5 rounded-4 shadow-sm border-0 mb-4">
+            <h5 class="fw-800 mb-4 border-bottom pb-3" style="font-family: var(--font-head);"><i class="bi bi-gear-wide-connected me-2 text-farm"></i>Ajustes Globales</h5>
+            
+            <form action="{% url 'admin_inventory_config' %}" method="POST">
+                {% csrf_token %}
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold uppercase text-muted letters-wide">WhatsApp de Ventas</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border-2" style="border-color: var(--brand-light) !important;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-whatsapp text-success"></i></span>
+                            <input type="text" name="whatsapp_number" value="{{ config.whatsapp_number }}" class="form-control border-0 px-4" placeholder="Ej: 573001234567">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold uppercase text-muted letters-wide">Horarios de Atención</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border-2" style="border-color: var(--brand-light) !important;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-clock text-farm"></i></span>
+                            <input type="text" name="business_hours" value="{{ config.business_hours }}" class="form-control border-0 px-4" placeholder="Ej: Lun-Vie 8am-6pm">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold uppercase text-muted letters-wide">Facebook URL</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border-2" style="border-color: var(--brand-light) !important;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-facebook text-primary"></i></span>
+                            <input type="url" name="facebook_url" value="{{ config.facebook_url }}" class="form-control border-0 px-4">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold uppercase text-muted letters-wide">Instagram URL</label>
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border-2" style="border-color: var(--brand-light) !important;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-instagram text-danger"></i></span>
+                            <input type="url" name="instagram_url" value="{{ config.instagram_url }}" class="form-control border-0 px-4">
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small fw-bold uppercase text-muted letters-wide">Prefijo Mensaje WhatsApp</label>
+                        <textarea name="order_wa_prefix" rows="2" class="form-control form-control-lg shadow-sm rounded-4 border-2 px-4" style="border-color: var(--brand-light) !important;">{{ config.order_wa_prefix }}</textarea>
+                        <div class="form-text small">Este texto aparecerá al inicio del mensaje que el cliente envía por WhatsApp.</div>
+                    </div>
+                </div>
+
+                <div class="mt-5 pt-4 border-top">
+                    <button type="submit" class="btn btn-lettuce rounded-pill px-5 py-3 shadow fw-bold w-100 fs-5 btn-animate">
+                        <i class="bi bi-check-circle-fill me-2"></i>Guardar Configuración
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-warning bg-opacity-10 p-4 rounded-4 border-start border-5 border-warning d-flex align-items-center gap-3">
+            <i class="bi bi-info-circle-fill fs-3 text-warning"></i>
+            <div>
+                <div class="fw-800 text-warning uppercase x-small letters-wide">Nota Importante</div>
+                <div class="text-muted small">Los cambios realizados aquí se reflejarán instantáneamente en la interfaz pública de la tienda y en los enlaces de WhatsApp generados.</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
