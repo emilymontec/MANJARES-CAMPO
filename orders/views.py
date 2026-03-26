@@ -330,7 +330,7 @@ def admin_confirm_order_payment(request, order_id):
     # 3. Preparar mensaje de WhatsApp para el cliente
     config = SiteConfiguration.objects.first()
     customer_name = order.customer.get_full_name() or order.customer.username
-    wa_msg = f"¡Hola {customer_name}! 👋\n\nTu pago del pedido #{order.id} ha sido CONFIRMADO. ✅\n\nCódigo de rastreo: *#{order.id}*\nEstado actual: *{order.get_status_display()}*\n\nYa estamos preparando tu cosecha. 🌱🏠\n\nPuedes seguir el progreso aquí: {request.build_absolute_uri('/orders/rastreo/')}?order_id={order.id}"
+    wa_msg = f"¡Hola {customer_name}! 👋\n\nTu pago del pedido #{order.id} ha sido CONFIRMADO. ✅\n\nCódigo de rastreo: *#{order.id}*\nEstado actual: *{order.get_status_display()}*\n\nYa estamos preparando tu cosecha. 🌱🏠"
     
     wa_link = f"https://wa.me/{order.customer_phone}?{urlencode({'text': wa_msg})}"
     
