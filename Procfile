@@ -1,1 +1,1 @@
-web: gunicorn MANJARESCAMPO.wsgi
+web: sh start.sh
