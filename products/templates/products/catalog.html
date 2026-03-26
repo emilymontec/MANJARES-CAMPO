@@ -9,35 +9,53 @@
 {% if offer_products and not search_query and not selected_cat %}
 <div class="row g-3 g-md-4 mb-5 pop-in">
     <div class="col-12">
-        <div class="bento p-3 p-md-5" style="background: linear-gradient(135deg, #FF9966, #FF5E62); border: none;">
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
-                <div>
-                    <h2 class="fw-800 text-white m-0 fs-3 fs-md-2" style="font-family: var(--font-head);"><i class="bi bi-fire me-2"></i>Ofertas del Día</h2>
-                    <p class="text-white opacity-90 m-0 fw-medium small">Productos frescos con descuentos imperdibles.</p>
+        <div class="bento p-4 p-md-5 overflow-hidden position-relative" style="background: linear-gradient(135deg, #FF5E62, #FF9966); border: none; box-shadow: 12px 12px 0px var(--brand-farm);">
+            
+            <!-- Background Decoration -->
+            <i class="bi bi-lightning-charge-fill position-absolute" style="font-size: 12rem; color: rgba(255,255,255,0.1); top: -20px; right: -20px; transform: rotate(15deg);"></i>
+            
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 gap-3 position-relative">
+                <div class="text-center text-md-start">
+                    <span class="badge bg-white text-danger px-3 py-2 rounded-pill fw-800 mb-3" style="font-size: 0.75rem; letter-spacing: 1px; box-shadow: 4px 4px 0px rgba(0,0,0,0.1);">OFERTAS FLASH <i class="bi bi-lightning-fill"></i></span>
+                    <h2 class="fw-800 text-white m-0 display-6" style="font-family: var(--font-head); text-shadow: 2px 2px 0px rgba(0,0,0,0.1);">Cosecha de Ahorro</h2>
+                    <p class="text-white opacity-90 m-0 fw-bold fs-5">¡Aprovecha antes de que se agoten!</p>
                 </div>
-                <a href="{% url 'offers' %}" class="btn btn-light rounded-pill px-4 fw-bold text-danger shadow-sm w-100 w-sm-auto">Ver Todo</a>
+                <a href="{% url 'offers' %}" class="btn-app bg-white text-danger px-5 py-3 fw-800 shadow-lg border-0" style="border-radius: 20px;">
+                    VER TODAS <i class="bi bi-arrow-right-short fs-4"></i>
+                </a>
             </div>
             
-            <div class="row g-2 g-md-3">
+            <div class="row g-3 position-relative">
                 {% for p in offer_products %}
-                <div class="col-6 col-md-3 pop-in" style="--delay: {{ forloop.counter0|add:1 }}00ms; animation-delay: var(--delay);">
-                    <div class="bg-white rounded-4 p-2 p-md-3 h-100 shadow-sm bento-hover position-relative overflow-hidden">
-                        <span class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 fw-bold extra-small rounded-bl-4" style="border-bottom-left-radius: 12px; font-size: 0.6rem; z-index: 10;">OFERTA</span>
-                        <div class="prod-img-box mb-2" style="height: 100px; height: md-120px;">
+                <div class="col-6 col-lg-3 pop-in" style="--delay: {{ forloop.counter0|add:1 }}00ms; animation-delay: var(--delay);">
+                    <div class="offer-card-fun h-100 p-3 p-md-4 bg-white rounded-5 shadow-sm position-relative d-flex flex-column">
+                        <!-- Percentage Badge -->
+                        {% if p.discount_percentage %}
+                        <div class="discount-badge">-{{ p.discount_percentage }}%</div>
+                        {% endif %}
+                        
+                        <div class="prod-img-box mb-3" style="height: 120px; background: #FFF5F5; border-radius: 24px;">
                             {% if p.image %}
-                            <img src="{{ p.image.url }}" class="w-100 h-100 object-fit-cover">
+                            <img src="{{ p.image.url }}" class="w-100 h-100 object-fit-contain p-2">
                             {% else %}
-                            <i class="bi bi-image text-muted opacity-25 fs-1"></i>
+                            <i class="bi bi-basket2 text-danger opacity-25 fs-1"></i>
                             {% endif %}
                         </div>
-                        <h6 class="fw-bold text-farm mb-1 text-truncate" style="font-size: 0.85rem;">{{ p.name }}</h6>
-                        <div class="d-flex flex-wrap align-items-center gap-1 gap-md-2">
-                            <span class="text-danger fw-800 fs-6 fs-md-5">${{ p.offer_price }}</span>
-                            <span class="text-muted text-decoration-line-through extra-small">${{ p.price }}</span>
+                        
+                        <div class="flex-grow-1">
+                            <h5 class="fw-800 text-farm mb-2 text-truncate" style="font-family: var(--font-head);">{{ p.name }}</h5>
+                            <div class="d-flex align-items-end gap-2 mb-3">
+                                <span class="fs-3 fw-800 text-danger lh-1">${{ p.offer_price }}</span>
+                                <span class="text-muted text-decoration-line-through small fw-bold mb-1">${{ p.price }}</span>
+                            </div>
                         </div>
-                        <a href="{{ p.wa_link }}" target="_blank" class="btn btn-success btn-sm w-100 rounded-pill mt-2 fw-bold" style="font-size: 0.75rem;">
-                            <i class="bi bi-whatsapp"></i> Aprovechar Oferta
-                        </a>
+                        
+                        <form action="{% url 'add_to_cart' p.id %}" method="POST" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100 rounded-4 py-2 fw-800 d-flex align-items-center justify-content-center gap-2 border-0 shadow-sm" style="background: #FF5E62; transition: 0.3s;">
+                                <i class="bi bi-cart-plus-fill"></i> ¡LO QUIERO!
+                            </button>
+                        </form>
                     </div>
                 </div>
                 {% endfor %}
@@ -45,24 +63,92 @@
         </div>
     </div>
 </div>
+
+<style>
+    .offer-card-fun {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 3px solid transparent;
+    }
+    .offer-card-fun:hover {
+        transform: translateY(-12px) scale(1.03);
+        border-color: #FF9966;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+    }
+    .discount-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: #FF5E62;
+        color: white;
+        font-weight: 800;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        border-radius: 12px;
+        z-index: 10;
+        box-shadow: 3px 3px 0px var(--brand-farm);
+    }
+</style>
 {% endif %}
 
 <!-- HERO BENTO (Optional, keep simplified or remove static offers) -->
 {% if not search_query and not selected_cat and not offer_products %}
 <div class="row g-4 mb-5 pop-in">
-    <div class="col-lg-12">
+    <div class="col-lg-8">
         <div class="bento d-flex flex-column justify-content-center h-100 p-4 p-md-5 position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--brand-lettuce), var(--brand-farm)); border: none;">
             <div class="position-relative z-index-1" style="max-width: 600px;">
-                <h1 class="display-6 display-md-5 mb-3 text-white" style="font-family: var(--font-head);">Sabor que nace en casa.</h1>
-                <p class="fs-6 fw-medium text-white opacity-90 mb-0" style="line-height: 1.6;">
-                    Directo del productor a tu mesa. Descubre la frescura real con precios que cuidan tu bolsillo.
+                <span class="badge mb-3 px-3 py-2 rounded-pill" style="background: rgba(255,255,255,0.2); color: white; font-weight: 700; font-size: 0.8rem; letter-spacing: 1px;">COSECHA DEL DÍA</span>
+                <h1 class="display-5 mb-3 text-white" style="font-family: var(--font-head); line-height: 1.1;">Sabor que nace en el campo, directo a tu casa.</h1>
+                <p class="fs-5 fw-medium text-white opacity-90 mb-4" style="line-height: 1.6;">
+                    Descubre la frescura real con precios que cuidan tu bolsillo y apoyan al productor local.
                 </p>
+                <div class="d-flex gap-3">
+                    <a href="#productos" class="btn-app btn-light-app">Explorar <i class="bi bi-arrow-down-short fs-4"></i></a>
+                </div>
             </div>
-            <i class="bi bi-flower1 position-absolute text-white" style="font-size: 8rem; font-size: md-15rem; bottom: -20px; right: -20px; opacity: 0.05; pointer-events: none;"></i>
+            <i class="bi bi-flower1 position-absolute text-white" style="font-size: 15rem; bottom: -40px; right: -40px; opacity: 0.1; pointer-events: none; transform: rotate(15deg);"></i>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="bento h-100 p-4 d-flex flex-column justify-content-center align-items-center text-center" style="background: var(--brand-yellow); border: none; box-shadow: 10px 10px 0px var(--brand-farm);">
+            <div class="logo-icon mb-3" style="width: 80px; height: 80px; font-size: 2.5rem; background: var(--brand-farm); color: var(--brand-yellow);">
+                <i class="bi bi-truck"></i>
+            </div>
+            <h3 class="text-farm mb-2">Envíos Rápidos</h3>
+            <p class="text-farm fw-bold opacity-75 small mb-0">Recibe tus productos frescos en tiempo récord.</p>
+        </div>
+    </div>
+</div>
+
+<!-- HOW IT WORKS SECTION -->
+<div class="row g-4 mb-5 pop-in" style="animation-delay: 0.2s;">
+    <div class="col-12 text-center mb-2">
+        <h2 class="fs-3">¿Cómo funciona?</h2>
+    </div>
+    <div class="col-md-4">
+        <div class="bento text-center h-100 p-4">
+            <div class="fs-1 text-lettuce mb-3"><i class="bi bi-basket2"></i></div>
+            <h5 class="fw-bold">1. Elige</h5>
+            <p class="text-muted small mb-0">Navega por nuestro catálogo y añade lo mejor del campo a tu canasta.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="bento text-center h-100 p-4">
+            <div class="fs-1 text-warning mb-3"><i class="bi bi-chat-dots"></i></div>
+            <h5 class="fw-bold">2. Confirma</h5>
+            <p class="text-muted small mb-0">Revisa tu pedido y confírmalo por WhatsApp de forma sencilla.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="bento text-center h-100 p-4">
+            <div class="fs-1 text-danger mb-3"><i class="bi bi-heart-fill"></i></div>
+            <h5 class="fw-bold">3. Disfruta</h5>
+            <p class="text-muted small mb-0">Recibe en casa y disfruta de la calidad y frescura inigualable.</p>
         </div>
     </div>
 </div>
 {% endif %}
+
+<div id="productos"></div>
 
 <!-- CATEGORY PILLS -->
 <div class="d-flex gap-2 overflow-auto mb-5 pb-2 pop-in" style="animation-delay: 0.1s;">
@@ -80,50 +166,51 @@
 <div class="row g-3 g-md-4 mb-5">
     {% for p in products %}
     <div class="col-6 col-md-4 col-lg-3 pop-in" style="--delay: {{ forloop.counter0|add:2 }}00ms; animation-delay: var(--delay);">
-        <div class="bento bento-hover d-flex flex-column p-2 p-md-4 h-100">
+        <div class="bento bento-hover d-flex flex-column p-2 p-md-4 h-100 position-relative overflow-hidden">
             
-            <div class="prod-img-box mb-3" style="height: 140px; height: md-180px;">
+            <div class="prod-img-box mb-3" style="height: 140px; height: md-180px; background: #f8f9fa; border-radius: 16px;">
                 {% if p.is_on_offer %}
-                <span class="deal-tag position-absolute top-0 start-0 m-2 z-index-2" style="background: var(--brand-chilli); font-size: 0.6rem;">OFERTA</span>
+                <span class="deal-tag position-absolute top-0 start-0 m-2 z-index-2" style="background: var(--brand-chilli); font-size: 0.65rem; box-shadow: 2px 2px 0px var(--brand-light);">OFERTA</span>
                 {% endif %}
                 
                 {% if p.image %}
-                <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                <img src="{{ p.image.url }}" alt="{{ p.name }}" class="rounded-3">
                 {% else %}
-                <i class="bi bi-image" style="font-size: 2rem; color: rgba(0,0,0,0.1);"></i>
+                <div class="d-flex align-items-center justify-content-center h-100">
+                    <i class="bi bi-image text-muted opacity-25" style="font-size: 3rem;"></i>
+                </div>
                 {% endif %}
             </div>
 
         <div class="flex-grow-1 d-flex flex-column">
                 <a href="#" class="text-decoration-none text-primary-emphasis mb-1">
-                    <h4 class="fs-6 fs-md-5 fw-bold m-0 lh-sm" style="color: var(--text-main);">{{ p.name }}</h4>
+                    <h4 class="fs-6 fs-md-5 fw-800 m-0 lh-sm" style="color: var(--text-main); font-family: var(--font-head);">{{ p.name }}</h4>
                 </a>
-                <p class="text-secondary small fw-medium mb-1 lh-sm d-none d-md-block">{{ p.description|default:"Fresco y delicioso, seleccionado para ti."|truncatechars:45 }}</p>
-                <p class="text-muted extra-small fw-bold uppercase letters-wide mb-2 mb-md-3" style="font-size: 0.65rem;">{{ p.get_unit_display }}</p>
+                <p class="text-muted small fw-medium mb-2 lh-sm d-none d-md-block" style="font-size: 0.8rem;">{{ p.description|default:"Fresco y delicioso, seleccionado para ti."|truncatechars:45 }}</p>
+                <div class="mb-3">
+                    <span class="badge rounded-pill" style="background: var(--brand-light); color: var(--brand-farm); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px;">{{ p.get_unit_display|upper }}</span>
+                </div>
                 
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mt-auto gap-2">
                     <div>
                         {% if p.is_on_offer and p.offer_price %}
-                        <span class="fs-5 fs-md-4 fw-bold text-danger">${{ p.offer_price }}</span>
-                        <span class="d-block text-muted text-decoration-line-through" style="font-size: 0.7rem; margin-top: -4px;">${{ p.price }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fs-4 fw-800 text-danger">${{ p.offer_price }}</span>
+                            <span class="text-muted text-decoration-line-through" style="font-size: 0.75rem;">${{ p.price }}</span>
+                        </div>
                         {% else %}
-                        <span class="fs-5 fs-md-4 fw-bold" style="color: var(--brand-farm);">${{ p.price }}</span>
-                        <span class="d-block text-muted" style="font-size: 0.6rem; font-weight: 700; margin-top: -4px;">PRECIO FINAL</span>
+                        <span class="fs-4 fw-800" style="color: var(--brand-farm);">${{ p.price }}</span>
                         {% endif %}
                     </div>
                     
-                    <div class="d-flex gap-2 gap-md-3 w-100 w-md-auto align-items-center">
-                        <form action="{% url 'add_to_cart' p.id %}" method="POST" class="m-0 flex-grow-1 flex-md-grow-0">
+                    <div class="d-flex gap-2 w-100 w-md-auto">
+                        <form action="{% url 'add_to_cart' p.id %}" method="POST" class="m-0 flex-grow-1">
                             {% csrf_token %}
-                            <button type="submit" class="btn rounded-4 shadow-sm w-100 d-flex align-items-center justify-content-center gap-2" style="height: 44px; padding: 0 15px; background: var(--brand-yellow) !important; color: var(--brand-farm); border: none; transition: 0.3s;" title="Agregar al carrito">
-                                <i class="bi bi-cart-plus-fill fs-5"></i>
-                                <span class="fw-bold d-md-none" style="font-size: 0.8rem;">Añadir</span>
+                            <button type="submit" class="btn rounded-4 shadow-sm w-100 d-flex align-items-center justify-content-center gap-2" style="height: 48px; background: var(--brand-yellow) !important; color: var(--brand-farm); border: none; transition: 0.3s; box-shadow: 4px 4px 0px var(--brand-farm) !important;" title="Agregar al carrito">
+                                <i class="bi bi-plus-circle-fill fs-5"></i>
+                                <span class="fw-800 d-md-none" style="font-size: 0.85rem;">Añadir</span>
                             </button>
                         </form>
-                        
-                        <a href="{{ p.wa_link }}" target="_blank" class="d-flex align-items-center justify-content-center text-decoration-none flex-shrink-0" style="width: 44px; height: 44px; background: #25D366; color: white; border-radius: 12px; transition: 0.3s;" title="Comprar por WhatsApp">
-                            <i class="bi bi-whatsapp fs-5"></i>
-                        </a>
                     </div>
                 </div>
             </div>

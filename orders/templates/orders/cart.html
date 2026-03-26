@@ -57,8 +57,26 @@
 
         <!-- RESUMEN BENTO -->
         <div class="col-lg-5">
-            <div class="bento p-4 p-md-5 sticky-top" style="top: 100px;">
-                <h3 class="fw-bold mb-4 d-flex align-items-center gap-2"><i class="bi bi-receipt"></i> Resumen</h3>
+            <div class="bento p-4 p-md-5 sticky-top" style="top: 100px; box-shadow: var(--shadow-fun);">
+                <h3 class="fw-800 mb-4 d-flex align-items-center gap-2" style="font-family: var(--font-head);"><i class="bi bi-receipt-cutoff text-lettuce"></i> Resumen de Compra</h3>
+
+                {% if FREE_SHIPPING_OVER %}
+                <div class="mb-4 p-3 rounded-4" style="background: var(--brand-light); border: 2px dashed var(--brand-lettuce);">
+                    {% if cart_total < FREE_SHIPPING_OVER %}
+                    <p class="small fw-bold mb-2 text-farm text-center">
+                        <i class="bi bi-truck-flatbed me-1"></i> ¡Te falta poco para el envío gratis!
+                    </p>
+                    <div class="progress" style="height: 12px; border-radius: 10px; background: rgba(255,255,255,0.5);">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                             style="width: {% widthratio cart_total FREE_SHIPPING_OVER 100 %}%; background: var(--brand-lettuce); border-radius: 10px;"></div>
+                    </div>
+                    {% else %}
+                    <p class="small fw-bold mb-0 text-farm text-center">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i> ¡Felicidades! Tienes <strong>Envío Gratis</strong>
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
 
                 <div class="d-flex justify-content-between mb-3 fw-medium">
                     <span class="text-secondary">Subtotal</span>
@@ -128,7 +146,7 @@
                             <input type="tel" name="phone" required class="form-control border-0 px-3 py-2" placeholder="Ej: 3001234567" value="{{ user.profile.phone|default:'' }}">
                         </div>
                     </div>
-                    <button type="submit" class="btn-app btn-primary-app w-100 py-3 d-flex justify-content-center text-white border-0" style="background: #25D366; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);">
+                    <button type="submit" class="btn-app btn-primary-app w-100 py-3 d-flex justify-content-center text-white border-0 checkout-btn-fun" style="background: #25D366; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);">
                         <i class="bi bi-whatsapp me-2 fs-5"></i> Pedir por WhatsApp
                     </button>
                 </form>
@@ -140,6 +158,16 @@
 <style>
     /* Radio Pill styles */
     .btn-check:checked + label { background: var(--brand-lettuce) !important; color: white !important; box-shadow: 0 4px 15px rgba(61, 176, 67, 0.2); }
+
+    .checkout-btn-fun {
+        animation: pulse-soft 2s infinite;
+        transition: 0.3s;
+    }
+    .checkout-btn-fun:hover {
+        animation: none;
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 15px 30px rgba(37, 211, 102, 0.4);
+    }
 </style>
 
 <script>

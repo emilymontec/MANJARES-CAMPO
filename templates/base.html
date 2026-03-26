@@ -31,16 +31,34 @@
     --brand-primary: var(--brand-lettuce);
     --brand-dark: var(--brand-farm);
     
-    --radius-lg: 20px;
-    --radius-md: 12px;
+    --radius-lg: 24px;
+    --radius-md: 16px;
     --radius-pill: 50px;
     
-    --shadow-soft: 0 4px 20px rgba(31, 82, 52, 0.05);
-    --shadow-hover: 0 15px 35px rgba(61, 176, 67, 0.15);
+    --shadow-soft: 0 10px 30px rgba(31, 82, 52, 0.05);
+    --shadow-hover: 0 20px 40px rgba(61, 176, 67, 0.15);
+    --shadow-fun: 8px 8px 0px var(--brand-light);
     
     --font-head: 'Fraunces', serif;
     --font-app: 'Plus Jakarta Sans', sans-serif;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes pulse-soft {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 body {
@@ -48,6 +66,43 @@ body {
     color: var(--text-main);
     font-family: var(--font-app);
     margin: 0;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Texture overlay for organic feel */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("https://www.transparenttextures.com/patterns/asfalt-light.png");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Decorative Blobs */
+.blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: -1;
+    opacity: 0.15;
+    pointer-events: none;
+}
+.blob-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--brand-lemon);
+    top: -100px;
+    right: -100px;
+}
+.blob-2 {
+    width: 300px;
+    height: 300px;
+    background: var(--brand-lettuce);
+    bottom: -50px;
+    left: -50px;
 }
 
 h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
@@ -55,22 +110,23 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
 .bento { 
     background: var(--bg-card); 
     border-radius: var(--radius-lg);
-    border: none;
-    padding: 20px; 
+    border: 2px solid transparent;
+    padding: 24px; 
     transition: var(--transition);
+    box-shadow: var(--shadow-soft);
 }
 
 .bento-hover:hover {
-    transform: translateY(-8px);
+    transform: translateY(-10px) scale(1.01);
     box-shadow: var(--shadow-hover);
-    transition: var(--transition);
+    border-color: var(--brand-light);
 }
 
 /* BUTTONS */
 .btn-app {
     font-family: var(--font-app);
     font-weight: 700;
-    padding: 12px 24px;
+    padding: 14px 28px;
     border-radius: var(--radius-pill);
     border: none;
     background: var(--brand-light);
@@ -81,7 +137,13 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-app:active {
+    transform: scale(0.95);
 }
 
 .btn-light-app {
@@ -96,25 +158,28 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
 
 .btn-primary-app:hover {
     background: var(--brand-farm);
-    transform: scale(1.02);
+    color: #FFF;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(31, 82, 52, 0.2);
 }
 
 /* SEARCH BAR */
 .search-app {
     background: #FFF;
-    border: 2px solid var(--brand-light);
+    border: 3px solid var(--brand-light);
     border-radius: var(--radius-pill);
-    padding: 8px 18px;
+    padding: 10px 22px;
     display: flex;
     align-items: center;
     width: 100%;
-    max-width: 450px;
-    transition: 0.3s;
+    max-width: 500px;
+    transition: var(--transition);
 }
 
 .search-app:focus-within {
     border-color: var(--brand-lettuce);
-    box-shadow: 0 0 0 4px rgba(61, 176, 67, 0.1);
+    box-shadow: 0 0 0 6px rgba(61, 176, 67, 0.1);
+    transform: translateY(-2px);
 }
 
 .search-app input {
@@ -122,78 +187,70 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
     background: transparent;
     outline: none;
     width: 100%;
-    margin-left: 10px;
-    font-weight: 500;
+    margin-left: 12px;
+    font-weight: 600;
     color: var(--brand-farm);
+    font-size: 1rem;
 }
 
 /* NAV */
 .nav-pill {
-    background: rgba(242, 241, 230, 0.88);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid var(--brand-light);
-    padding: 12px 40px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(15px);
+    border-bottom: 3px solid var(--brand-light);
+    padding: 16px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
     z-index: 1050;
+    transition: var(--transition);
 }
 
 @media (max-width: 991.98px) {
     .nav-pill {
-        padding: 12px 20px;
-    }
-    .search-app {
-        width: 100%;
-        margin: 10px 0;
+        padding: 16px 20px;
     }
 }
 
 .logo-app {
     font-family: var(--font-head);
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     color: var(--brand-farm) !important;
     text-decoration: none !important;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    transition: var(--transition);
+}
+
+.logo-app:hover {
+    transform: scale(1.05);
 }
 
 .logo-icon {
     background: var(--brand-lettuce);
-    color: #FFF;
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
+    width: 55px;
+    height: 55px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-.logo-icon:hover {
-    transform: scale(1.1) rotate(-5deg);
-    transition: var(--transition);
+    animation: float 4s ease-in-out infinite;
+    box-shadow: 4px 4px 0px var(--brand-light);
 }
 
-/* TAGS */
-.deal-tag {
-    background: var(--brand-pumpkin);
-    color: #FFF;
-    font-size: 0.7rem;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 6px;
-    text-transform: uppercase;
-}
-
-.flash-tag {
-    background: var(--brand-chilli);
-    color: #FFF;
-    font-size: 0.65rem;
+/* ANNOUNCEMENT BAR */
+.announcement-bar {
+    background: var(--brand-farm);
+    color: var(--brand-light);
+    text-align: center;
+    padding: 8px;
+    font-size: 0.85rem;
     font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 /* CARDS */
@@ -242,6 +299,32 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
     transform: translateX(5px);
 }
 
+/* TAGS */
+.deal-tag {
+    background: var(--brand-pumpkin);
+    color: #FFF;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 0px var(--brand-farm);
+}
+
+.flash-tag {
+    background: var(--brand-chilli);
+    color: #FFF;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.pop-in {
+    animation: slideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+}
+
 /* SCROLLBARS */
 ::-webkit-scrollbar {
     width: 6px;
@@ -259,52 +342,68 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
 }
 
 /* FAB BUTTONS */
-.fab-app {
+.fab-stack {
     position: fixed;
+    bottom: 30px;
     right: 30px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1050;
+    align-items: flex-end;
+}
+
+.fab-app {
+    width: 55px;
+    height: 55px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #FFF !important;
-    font-size: 1.8rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    font-size: 1.6rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     transition: var(--transition);
-    z-index: 1040;
     border: none;
+    position: relative;
+    text-decoration: none !important;
 }
 
 .fab-app:hover {
-    transform: scale(1.1) translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
 }
 
-#cbt-panel {
-    position: fixed;
-    right: 30px;
-    bottom: 110px;
-    width: 350px;
-    max-width: 90vw;
-    display: none;
-    z-index: 1050;
-    padding: 20px;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+.fab-cart {
+    background: var(--brand-lettuce);
+}
+
+.fab-whatsapp {
+    background: #25D366;
+}
+
+.fab-top {
+    background: var(--brand-farm);
+    width: 45px;
+    height: 45px;
+    font-size: 1.2rem;
+    border-radius: 12px;
 }
 
 @media (max-width: 767.98px) {
-    .fab-app {
+    .fab-stack {
+        bottom: 20px;
         right: 20px;
+        gap: 10px;
+    }
+    .fab-app {
         width: 50px;
         height: 50px;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
     }
-    #cbt-panel {
-        right: 20px;
-        bottom: 85px; /* Ajustado para que no tape los botones o se alinee mejor */
+    .fab-top {
+        width: 40px;
+        height: 40px;
     }
 }
 
@@ -314,6 +413,9 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
 </head>
 
 <body>
+    <div class="announcement-bar">
+        <i class="bi bi-stars me-2"></i> ¡Productos frescos del campo a tu hogar! <i class="bi bi-stars ms-2"></i>
+    </div>
     <header class="nav-pill flex-wrap">
         <div class="d-flex align-items-center justify-content-between w-100 w-lg-auto mb-2 mb-lg-0 gap-3">
             <a href="{% url 'catalog' %}" class="logo-app">
@@ -372,46 +474,68 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 800; }
                 <i class="bi bi-person-circle me-2"></i> Acceder
             </a>
             {% endif %}
-
-            <a href="{% url 'cart_view' %}" class="btn-app py-2 px-3 shadow-sm position-relative d-flex align-items-center justify-content-center" style="background: var(--brand-lettuce); color: #FFF; width: 44px; height: 44px; border-radius: 14px;">
-                <i class="bi bi-cart-fill fs-5"></i>
-                {% if cart_count %}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem; padding: 0.35em 0.65em;">
-                    {{ cart_count }}
-                </span>
-                {% endif %}
-            </a>
         </div>
     </header>
 
-    <main class="container px-4 mt-4" style="max-width: 1400px;">
+    <main class="container px-4 mt-4" style="max-width: 1400px; min-height: 70vh;">
         {% block content %}{% endblock %}
     </main>
 
+    <!-- DECORATIVE BLOBS -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
     <!-- FOOTER BENTO -->
     <footer class="container px-4 mt-5 pt-5 pb-5">
-        <div class="bento p-4 p-md-5 d-flex flex-wrap justify-content-between align-items-center gap-4 text-center text-lg-start">
-            <div>
-                <h3 class="d-flex align-items-center justify-content-center justify-content-lg-start gap-2 mb-2">
-                    <img src="{% static 'logo.png' %}" alt="Logo" style="width: 45px; height: 45px; border-radius: 10px; object-fit: cover;">
+        <div class="bento p-4 p-md-5 d-flex flex-wrap justify-content-between align-items-center gap-4 text-center text-lg-start position-relative overflow-hidden" style="border: 2px solid var(--brand-light); box-shadow: var(--shadow-fun);">
+            <div style="position: relative; z-index: 2;">
+                <h3 class="d-flex align-items-center justify-content-center justify-content-lg-start gap-3 mb-3">
+                    <div class="logo-icon" style="width: 45px; height: 45px; animation: none; transform: rotate(-5deg);">
+                        <img src="{% static 'logo.png' %}" alt="Logo" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;">
+                    </div>
                     Manjares del Campo
                 </h3>
-                <p class="text-secondary fw-medium m-0">Frescura y calidad, directo del productor a tu mesa.</p>
-                <div class="mt-3">
-                    <a href="{% url 'order_tracking' %}" class="text-farm fw-bold text-decoration-none small"><i class="bi bi-geo-alt-fill me-1"></i> Rastrear mi pedido</a>
+                <p class="text-secondary fw-bold m-0" style="max-width: 400px;">Frescura y calidad, directo del productor a tu mesa. Apoyando el campo colombiano.</p>
+                <div class="d-flex justify-content-center justify-content-lg-start gap-3 mt-4">
+                    <a href="{{ SOCIAL_FACEBOOK_URL }}" class="btn-app btn-light-app p-0" style="width: 40px; height: 40px; border-radius: 12px;"><i class="bi bi-facebook fs-5"></i></a>
+                    <a href="{{ SOCIAL_INSTAGRAM_URL }}" class="btn-app btn-light-app p-0" style="width: 40px; height: 40px; border-radius: 12px;"><i class="bi bi-instagram fs-5"></i></a>
+                    <a href="https://wa.me/{{ WHATSAPP_NUMBER }}" class="btn-app btn-light-app p-0" style="width: 40px; height: 40px; border-radius: 12px;"><i class="bi bi-whatsapp fs-5"></i></a>
                 </div>
             </div>
-            <div class="d-flex gap-3">
-                <a href="{{ SOCIAL_FACEBOOK_URL }}" target="_blank" rel="noopener noreferrer" class="btn-app btn-light-app px-3"><i class="bi bi-facebook fs-5 m-0 text-primary"></i></a>
-                <a href="{{ SOCIAL_INSTAGRAM_URL }}" target="_blank" rel="noopener noreferrer" class="btn-app btn-light-app px-3"><i class="bi bi-instagram fs-5 m-0 text-danger"></i></a>
+            <div class="d-flex flex-column gap-2 text-lg-end" style="position: relative; z-index: 2;">
+                <span class="text-muted small fw-800 uppercase" style="letter-spacing: 1px;">Horario de Atención</span>
+                <p class="text-farm fw-bold m-0"><i class="bi bi-clock-fill me-2 text-lettuce"></i> {{ BUSINESS_HOURS }}</p>
+                <p class="text-farm fw-bold m-0"><i class="bi bi-geo-alt-fill me-2 text-lettuce"></i> Entregas en toda la ciudad</p>
+                <a href="{% url 'order_tracking' %}" class="btn-app btn-light-app mt-3 py-2 px-3 small" style="font-size: 0.8rem;"><i class="bi bi-geo-alt-fill me-1"></i> Rastrear mi pedido</a>
             </div>
+            <i class="bi bi-leaf position-absolute text-lettuce" style="font-size: 10rem; bottom: -30px; right: -30px; opacity: 0.05; pointer-events: none; transform: rotate(15deg);"></i>
+        </div>
+        <div class="text-center mt-4">
+            <p class="text-muted small fw-bold">© 2024 Manjares del Campo · Hecho con <i class="bi bi-heart-fill text-danger mx-1"></i> para ti</p>
         </div>
     </footer>
 
-    <!-- Botón Whatsapp -->
-    <a href="https://wa.me/{{ WHATSAPP_NUMBER }}" class="fab-app" style="bottom: 30px; background: #25D366; text-decoration: none;">
-        <i class="bi bi-whatsapp"></i>
-    </a>
+    <div class="fab-stack">
+        <!-- Botón Top -->
+        <a href="#" class="fab-app fab-top shadow-sm" title="Subir">
+            <i class="bi bi-arrow-up"></i>
+        </a>
+
+        <!-- Botón Whatsapp -->
+        <a href="https://wa.me/{{ WHATSAPP_NUMBER }}" class="fab-app fab-whatsapp" title="WhatsApp">
+            <i class="bi bi-whatsapp"></i>
+        </a>
+
+        <!-- Botón Carrito -->
+        <a href="{% url 'cart_view' %}" class="fab-app fab-cart" title="Ver Carrito">
+            <i class="bi bi-cart-fill"></i>
+            {% if cart_count %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.7rem; padding: 0.4em 0.7em;">
+                {{ cart_count }}
+            </span>
+            {% endif %}
+        </a>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
