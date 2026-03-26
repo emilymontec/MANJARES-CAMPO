@@ -16,8 +16,7 @@
         <table class="table table-hover align-middle">
             <thead class="bg-light text-muted small uppercase letters-wide">
                 <tr>
-                    <th class="border-0 py-3 ps-4">Icono</th>
-                    <th class="border-0 py-3">Nombre</th>
+                    <th class="border-0 py-3 ps-4">Nombre</th>
                     <th class="border-0 py-3 text-center">Productos Asociados</th>
                     <th class="border-0 py-3 text-end pe-4">Acciones</th>
                 </tr>
@@ -26,15 +25,6 @@
                 {% for cat in categories %}
                 <tr>
                     <td class="ps-4">
-                        <div class="rounded-3 bg-light d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; background: var(--brand-light) !important;">
-                            {% if 'bi-' in cat.icon %}
-                                <i class="bi {{ cat.icon }} text-farm fs-5"></i>
-                            {% else %}
-                                <span class="fs-5">{{ cat.icon|default:'🥦' }}</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <td>
                         <div class="fw-bold text-farm fs-5">{{ cat.name }}</div>
                     </td>
                     <td class="text-center">

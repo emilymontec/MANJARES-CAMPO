@@ -4,13 +4,9 @@ from .models import Product, Category
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['name', 'icon']
+        fields = ['name']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control border-0 px-4', 'placeholder': 'Nombre de la categoría'}),
-            'icon': forms.TextInput(attrs={'class': 'form-control border-0 px-4', 'placeholder': 'Emoji (🥦) o clase Bootstrap (bi-tag)'}),
-        }
-        help_texts = {
-            'icon': 'Puedes usar un emoji o una clase de Bootstrap Icons (ej: bi-apple).',
         }
 
 class ProductForm(forms.ModelForm):

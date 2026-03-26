@@ -8,8 +8,8 @@
     <div class="bento p-4 p-md-5" style="width: 100%; max-width: 480px;">
         
         <div class="text-center mb-5">
-            <h2 class="mb-2" style="font-size: 2.4rem; color: var(--brand-farm); font-family: var(--font-head);">Cosecha Directa.</h2>
-            <p class="text-muted fw-bold m-0" style="font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-lettuce) !important;">INGRESA A TU CUENTA PARA COMPRAR</p>
+            <h2 class="mb-2" style="font-size: 2.4rem; color: var(--brand-farm); font-family: var(--font-head);">Bienvenido Administrador.</h2>
+            <p class="text-muted fw-bold m-0" style="font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-lettuce) !important;">INGRESA PARA GESTIONAR TU COSEHA</p>
         </div>
 
         <form method="post" action="{% url 'login' %}">
@@ -23,18 +23,17 @@
             {% endif %}
 
             <div class="mb-3">
-                <label class="form-label fw-bold text-secondary mb-2 ms-1">Tu usuario o correo</label>
+                <label class="form-label fw-bold text-secondary mb-2 ms-1">Usuario</label>
                 <div class="position-relative">
                     <i class="bi bi-person-fill position-absolute top-50 translate-middle-y ms-3 text-secondary fs-5"></i>
                     <!-- Using manual inputs to maintain complete style control -->
-                    <input type="text" name="username" class="input-app" style="padding-left: 45px;" placeholder="ejemplo@correo.com" required>
+                    <input type="text" name="username" class="input-app" style="padding-left: 45px;" placeholder="usuario" required>
                 </div>
             </div>
 
             <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2 ms-1">
+                <div class="mb-2 ms-1">
                     <label class="form-label fw-bold text-secondary m-0">Contraseña</label>
-                    <a href="#" class="fw-bold text-decoration-underline small" style="color: var(--brand-pumpkin);">Recuperar</a>
                 </div>
                 <div class="position-relative">
                     <i class="bi bi-lock-fill position-absolute top-50 translate-middle-y ms-3 text-secondary fs-5"></i>

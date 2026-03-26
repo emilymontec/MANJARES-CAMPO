@@ -3,7 +3,6 @@ from django.db import models
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    icon = models.CharField(max_length=50, default="🥦", blank=True, help_text="Emoji o clase de Bootstrap (bi-...)")
 
     class Meta:
         verbose_name = "Categoría"
