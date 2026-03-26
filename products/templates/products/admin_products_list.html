@@ -53,7 +53,10 @@
                     <td class="text-center">
                         <form action="{% url 'admin_update_stock' p.id %}" method="POST" class="d-inline-flex gap-2 align-items-center">
                             {% csrf_token %}
-                            <input type="number" name="stock" value="{{ p.stock }}" class="form-control form-control-sm text-center rounded-pill border-2 {% if p.low_stock %}border-danger text-danger{% else %}border-light{% endif %}" style="width: 70px; font-weight: 800;">
+                            <div class="position-relative">
+                                <input type="number" name="stock" value="{{ p.stock }}" class="form-control form-control-sm text-center rounded-pill border-2 {% if p.low_stock %}border-danger text-danger{% else %}border-light{% endif %}" style="width: 80px; font-weight: 800; padding-right: 30px;">
+                                <span class="position-absolute top-50 translate-middle-y end-0 me-2 text-muted extra-small fw-bold" style="font-size: 0.6rem;">{{ p.unit }}</span>
+                            </div>
                             <button type="submit" class="btn btn-sm btn-outline-farm rounded-circle p-1" style="width: 28px; height: 28px;">
                                 <i class="bi bi-check-lg"></i>
                             </button>

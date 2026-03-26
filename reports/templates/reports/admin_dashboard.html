@@ -82,7 +82,7 @@
           {% for p in low_inventory %}
           <div class="d-flex justify-content-between align-items-center p-2 p-md-3 rounded-4" style="background: var(--brand-light);">
             <div class="fw-bold text-farm small fs-md-6">{{ p.name }}</div>
-            <span class="badge bg-chilli rounded-pill px-2 px-md-3" style="font-size: 0.75rem;">{{ p.stock }} uni.</span>
+            <span class="badge bg-chilli rounded-pill px-2 px-md-3" style="font-size: 0.75rem;">{{ p.stock }} {{ p.get_unit_display|lower }}</span>
           </div>
           {% endfor %}
         </div>
